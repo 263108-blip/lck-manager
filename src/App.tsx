@@ -66,7 +66,8 @@ function App() {
     localStorage.setItem('lck-manager-day',String(next))
     if (club) {
       advanceCareerWeek(club)
-      const currentDate=new Date(2026,10,23+next).toISOString().slice(0,10)
+      const calendarDate=new Date(2026,10,23+next)
+      const currentDate=[calendarDate.getFullYear(),String(calendarDate.getMonth()+1).padStart(2,'0'),String(calendarDate.getDate()).padStart(2,'0')].join('-')
       const teamPowerFor=(short:string)=>{
         const lineup=readClubRoster(short).filter(player=>player.status==='주전')
         return (lineup.reduce((sum,player)=>sum+player.overall,0)+(5-lineup.length)*58)/5
