@@ -19,7 +19,7 @@ type Player = {
 }
 
 const initialPlayers: Player[] = [
-  { name: 'Zeus', role: 'TOP', team: teamName, age: 22, overall: 96, lane: 98, teamfight: 96, macro: 94, mechanics: 98, champions: ['제이스', '그웬', '럼블'], status: '주전' },
+  { name: 'Zeus', role: 'TOP', team: 'T1', age: 22, overall: 96, lane: 98, teamfight: 96, macro: 94, mechanics: 98, champions: ['제이스', '그웬', '럼블'], status: '주전' },
   { name: 'Oner', role: 'JNG', team: 'T1', age: 23, overall: 95, lane: 93, teamfight: 96, macro: 96, mechanics: 95, champions: ['리 신', '바이', '자르반 4세'], status: '주전' },
   { name: 'Faker', role: 'MID', team: 'T1', age: 30, overall: 99, lane: 98, teamfight: 99, macro: 100, mechanics: 98, champions: ['아지르', '오리아나', '갈리오'], status: '주전' },
   { name: 'Gumayusi', role: 'ADC', team: 'T1', age: 24, overall: 96, lane: 97, teamfight: 98, macro: 94, mechanics: 97, champions: ['바루스', '진', '징크스'], status: '주전' },
@@ -136,7 +136,7 @@ const substitutes = roster
     const player: Player = {
       name,
       role: newRole,
-      team: 'T1',
+      team: teamName,
       age: 20,
       overall: 70,
       lane: 70,
