@@ -58,7 +58,8 @@ function App() {
   function selectClub(selected: Club) {
     localStorage.setItem('lck-manager-selected-club',JSON.stringify(selected))
     const current = localStorage.getItem('lck-manager-roster')
-    let currentTeam = ''\n    try { const parsed = JSON.parse(current || '[]'); currentTeam = parsed[0]?.team || '' } catch { currentTeam = '' }\n    if (!current || currentTeam !== selected.name) localStorage.setItem('lck-manager-roster',JSON.stringify(makeRoster(selected)))
+    let currentTeam = ''
+    try { const parsed = JSON.parse(current || '[]'); currentTeam = parsed[0]?.team || '' } catch { currentTeam = '' }\n    if (!current || currentTeam !== selected.name) localStorage.setItem('lck-manager-roster',JSON.stringify(makeRoster(selected)))
     setClub(selected); setActive('대시보드')
     window.dispatchEvent(new Event('lck-roster-updated'))
   }
