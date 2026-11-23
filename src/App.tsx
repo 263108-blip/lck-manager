@@ -58,7 +58,7 @@ function App() {
   function selectClub(selected: Club) {
     localStorage.setItem('lck-manager-selected-club',JSON.stringify(selected))
     const current = localStorage.getItem('lck-manager-roster')
-    if (!current || selected.short !== 'T1') localStorage.setItem('lck-manager-roster',JSON.stringify(makeRoster(selected)))
+    let currentTeam = ''\n    try { const parsed = JSON.parse(current || '[]'); currentTeam = parsed[0]?.team || '' } catch { currentTeam = '' }\n    if (!current || currentTeam !== selected.name) localStorage.setItem('lck-manager-roster',JSON.stringify(makeRoster(selected)))
     setClub(selected); setActive('대시보드')
     window.dispatchEvent(new Event('lck-roster-updated'))
   }
@@ -78,7 +78,7 @@ function App() {
       <header className="topbar"><div><span className="season">2026 SEASON</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button onClick={advanceDay}>하루 진행 →</button></div></header>
       <section className="content">
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);setActiveMatch(null);setActive('경기 일정')}}/>
-        : active==='선수단' ? <Roster/>
+        : active==='선수단' ? <Roster teamName={club.name}/>
         : active==='전술 및 밴픽' ? <Tactics teamName={club.name}/>
         : active==='경기 일정' ? <Schedule teamName={club.short} onStartMatch={m=>setActiveMatch(m)}/>
         : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
