@@ -64,7 +64,22 @@ function App() {
     const next=day+7
     setDay(next)
     localStorage.setItem('lck-manager-day',String(next))
-    if (club) advanceCareerWeek(club)
+    if (club) {
+      advanceCareerWeek(club)
+      const currentDate=new Date(2026,10,23+next).toISOString().slice(0,10)
+      const teamPowerFor=(short:string)=>{
+        const lineup=readClubRoster(short).filter(player=>player.status==='주전')
+        return (lineup.reduce((sum,player)=>sum+player.overall,0)+(5-lineup.length)*58)/5
+      }
+      const progressed=matches.map(match=>{
+        if(match.status!=='예정'||match.date>currentDate||match.home===club.short||match.away===club.short) return match
+        const difference=teamPowerFor(match.home)-teamPowerFor(match.away)
+        const homeWin=Math.random()<Math.max(.18,Math.min(.82,.5+difference*.018))
+        const close=Math.random()<.48
+        return {...match,status:'종료' as const,homeScore:homeWin?2:(close?1:0),awayScore:homeWin?(close?1:0):2}
+      })
+      saveMatches(progressed)
+    }
   }
   if (!club) return <ClubSelection onSelect={selectClub}/>
   return <div className="app">
