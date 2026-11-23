@@ -69,7 +69,33 @@ export function ClubOffice({ club, page, onChangePage }: { club: Club; page: str
   const train = () => {
     const morale = Math.min(100,career.morale + (career.training === '팀워크 집중' ? 5 : 2))
     const next = {...career,week:career.week+1,morale,history:[career.training+'을(를) 진행하고 1주가 지났습니다.',...career.history]}
-    setCareer(next); setNotice('훈련이 완료됐습니다. 선수단 컨디션과 사기가 갱신됐습니다.')
+    try {
+      const savedRoster = JSON.parse(localStorage.getItem('lck-manager-roster') || '[]')
+      const trainedRoster = savedRoster.map((player: any) => {
+        const stats = {
+          lane: Number(player.lane ?? player.overall ?? 70),
+          teamfight: Number(player.teamfight ?? player.overall ?? 70),
+          macro: Number(player.macro ?? player.overall ?? 70),
+          mechanics: Number(player.mechanics ?? player.overall ?? 70),
+        }
+        if (career.training === '라인전 집중') stats.lane = Math.min(100, stats.lane + 2)
+        else if (career.training === '한타 집중') stats.teamfight = Math.min(100, stats.teamfight + 2)
+        else if (career.training === '개인 기량 집중') stats.mechanics = Math.min(100, stats.mechanics + 2)
+        else if (career.training === '균형 훈련') {
+          stats.lane = Math.min(100, stats.lane + 1)
+          stats.teamfight = Math.min(100, stats.teamfight + 1)
+          stats.macro = Math.min(100, stats.macro + 1)
+          stats.mechanics = Math.min(100, stats.mechanics + 1)
+        }
+        return {...player,...stats,overall:Math.round((stats.lane+stats.teamfight+stats.macro+stats.mechanics)/4)}
+      })
+      save('lck-manager-roster',trainedRoster)
+      window.dispatchEvent(new Event('lck-roster-updated'))
+    } catch {
+      setNotice('훈련은 진행했지만 선수단 능력치 저장에 실패했습니다.')
+    }
+    setCareer(next)
+    setNotice('훈련 완료! 선택한 훈련에 따라 선수들의 능력치와 팀 사기가 성장했습니다.')
   }
   const hire = (person: Staff) => {
     if(career.staff.some(s=>s.id===person.id)){setNotice('이미 계약한 스태프입니다.');return}
