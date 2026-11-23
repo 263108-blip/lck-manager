@@ -148,7 +148,7 @@ export function ClubOffice({club,page,onChangePage}:{club:Club;page:string;onCha
   const filteredMarket=marketPlayers.filter(p=>(filterRole==='전체'||p.role===filterRole)&&(filterStatus==='전체'||(filterStatus==='FA'?p.contractStatus==='FA':p.contractStatus!=='FA')))
   const updateCareer=(patch:Partial<Career>,message?:string)=>{setCareer(old=>({...old,...patch}));if(message)setNotice(message)}
   const updateRoster=(next:PlayerData[])=>{setRoster(next);saveClubRoster(club.short,next)}
-  const startNegotiation=(p:PlayerData)=>{setSelectedPlayer(p);setOfferFee(p.contractStatus==='FA'?'0':String(Math.max(1,Math.round(p.value*1.1)));setOfferSalary(String(Math.max(p.salary,3)));setOfferYears('2')}
+  const startNegotiation=(p:PlayerData)=>{setSelectedPlayer(p);setOfferFee(p.contractStatus==='FA'?'0':String(Math.max(1,Math.round(p.value*1.1))));setOfferSalary(String(Math.max(p.salary,3)));setOfferYears('2')}
   const submitOffer=()=>{
     if(!selectedPlayer)return
     const fee=Math.max(0,Number(offerFee)),salary=Math.max(0,Number(offerSalary)),years=Math.max(1,Math.min(5,Number(offerYears)))
