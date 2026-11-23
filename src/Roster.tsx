@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from 'react'
-import { readClubRoster, saveClubRoster } from './ClubManager'
+import { readClubRoster, releasePlayerFromClub, renewPlayerContract, saveClubRoster } from './ClubManager'
 import type { PlayerData } from './seasonData'
 type ChampionMastery = {
   name: string
@@ -78,7 +78,7 @@ export default function Roster({ teamName = 'T1', teamShort = 'T1' }: { teamName
   const [newName, setNewName] = useState('')
   const [newRole, setNewRole] = useState('TOP')
 const [newChampion, setNewChampion] = useState('')
-const [newMastery, setNewMastery] = useState(70)
+const [newMastery, setNewMastery] = useState(70)\nconst [renewYears,setRenewYears] = useState(1)
 useEffect(() => {
   try {
     saveClubRoster(teamShort, roster as PlayerData[])
@@ -157,12 +157,24 @@ const substitutes = roster
 
   function releasePlayer() {
     if (!selected) return
-    if (!window.confirm(`${selected.name} 선수를 방출할까요?`)) return
-
-    const nextRoster = roster.filter(p => p.name !== selected.name)
-    setRoster(nextRoster)
-    setSelectedName(nextRoster[0]?.name || '')
+    if (!window.confirm(`${selected.name} 선수를 방출할까요? 계약 기간이 남았다면 보상금이 발생합니다.`)) return
+    const result = releasePlayerFromClub(teamShort, selected.id || selected.name)
+    if (!result) return
+    setRoster(result.roster as Player[])
+    setSelectedName(result.roster[0]?.name || '')
     setEditing(false)
+    alert(`방출 완료 · 계약 보상금 ₩${result.compensation.toFixed(1)}억`)
+  }
+
+  function renewContract() {
+    if (!selected?.id) return
+    const success = renewPlayerContract(teamShort, selected.id, renewYears)
+    if (!success) {
+      alert('계약 보너스를 지급할 예산이 부족합니다.')
+      return
+    }
+    setRoster(readClubRoster(teamShort) as Player[])
+    alert(`${selected.name} 선수와 ${renewYears}년 재계약했습니다.`)
   }
 function addChampion() {
   if (!selected || !newChampion.trim()) {
@@ -518,6 +530,7 @@ const selected =
                   <button onClick={changeStatus}>
                     {selected.status === '주전' ? '후보로 변경' : '주전으로 변경'}
                   </button>
+                  <div className="contract-renew-control"><select value={renewYears} onChange={e=>setRenewYears(Number(e.target.value))}><option value={1}>1년</option><option value={2}>2년</option><option value={3}>3년</option></select><button onClick={renewContract}>계약 연장</button></div>
                   <button className="release-btn" onClick={releasePlayer}>
                     선수 방출
                   </button>
