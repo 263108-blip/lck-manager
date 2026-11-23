@@ -328,6 +328,7 @@ const selected =
             <h3>선수 정보</h3>
 
             <p>{selected.team} / {selected.role} / {selected.age}세 · 계약 {selected.contractUntil ?? '미정'}년까지</p>
+            <div className={`player-contract-status ${selected.contractStatus === '거피셜' ? 'rumored' : selected.contractStatus === '확정' ? 'confirmed' : ''}`}>{selected.contractStatus === '거피셜' ? '거피셜 · 보도 기반 합류 예상' : selected.contractStatus === '확정' ? '2027 로스터 확정' : selected.contractStatus === 'FA' ? '자유 계약 선수' : '계약 유지 또는 발표 대기'}</div>
             <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span><span>사기 <b>{selected.morale ?? 76}/100</b></span></div>
 
             <h3>선수 능력치</h3>
