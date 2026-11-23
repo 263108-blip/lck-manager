@@ -4,7 +4,7 @@ import { useLeagueMatches, saveMatches, type Match } from './matchData'
 
 const filters = ['전체', '예정', '종료']
 
-function Schedule() {
+type ScheduleProps = { onStartMatch?: (match: Match) => void }\n\nfunction Schedule({ onStartMatch }: ScheduleProps) {
   const matches = useLeagueMatches()
   const [filter, setFilter] = useState('전체')
   const [selectedDate, setSelectedDate] = useState('전체')
@@ -220,6 +220,15 @@ function Schedule() {
                 <div><span>경기 상태</span><strong>{selectedMatch.status}</strong></div>
                 <div><span>경기 방식</span><strong>BO3</strong></div>
               </div>
+
+              {selectedMatch.status === '예정' && (selectedMatch.home === 'T1' || selectedMatch.away === 'T1') && (
+                <button
+                  className="schedule-start-match"
+                  onClick={() => onStartMatch?.(selectedMatch)}
+                >
+                  경기 준비 및 시작하기
+                </button>
+              )}
 
               <div className="schedule-result-editor">
                 <h3>경기 결과 입력</h3>
