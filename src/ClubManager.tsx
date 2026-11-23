@@ -56,10 +56,13 @@ export function applyMatchResult(club:Club,won:boolean,opponent:string) {
   if(!data) return
   const career=readCareer(data)
   const prize=won?1.8:0.65
+  const updatedRoster=readClubRoster(club.short).map(player=>({...player,morale:Math.max(0,Math.min(100,(player.morale??76)+(won?3:-4)))}))
+  saveClubRoster(club.short,updatedRoster)
   save(careerKey(club.short),{
     ...career,budget:Math.max(0,career.budget+prize),morale:Math.max(0,Math.min(100,career.morale+(won?4:-5))),
     history:[opponent+'전 '+(won?'승리':'패배')+' · 경기 수당 '+money(prize)+' 반영',...career.history].slice(0,100),
   })
+  window.dispatchEvent(new Event('lck-career-updated'))
 }
 export function advanceCareerWeek(club:Club) {
   const data=seasonClubs.find(team=>team.short===club.short)
@@ -78,7 +81,7 @@ export function advanceCareerWeek(club:Club) {
     else if(career.training==='운영') next.macro=Math.min(100,next.macro+amount)
     else if(career.training==='한타') next.teamfight=Math.min(100,next.teamfight+amount)
     else {next.lane=Math.min(100,next.lane+amount*.3);next.mechanics=Math.min(100,next.mechanics+amount*.3);next.macro=Math.min(100,next.macro+amount*.3);next.teamfight=Math.min(100,next.teamfight+amount*.3)}
-    next.overall=overall(next)
+    next.overall=Math.min(next.potential,overall(next))
     return next
   })
   let activeRoster=trained
@@ -297,6 +300,7 @@ export function ClubOffice({club,page,onChangePage}:{club:Club;page:string;onCha
     setNotice(person.name+' 코칭 스태프 영입 완료!')
   }
   const signSponsor=()=>{
+    if(career.sponsorName!=='기본 파트너'){setNotice('현재 스폰서 계약이 유지 중입니다. 다음 시즌 갱신 기간에 다시 협상할 수 있습니다.');return}
     const deals:{[key:string]:{name:string;weekly:number;bonus:number;reputation:number}}={
       '로컬 파트너':{name:'로컬 파트너',weekly:.25,bonus:2,reputation:0},
       '프리미엄 파트너':{name:'프리미엄 파트너',weekly:.55,bonus:5,reputation:0},
