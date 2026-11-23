@@ -23,7 +23,7 @@ function readRoster(teamShort:string): Player[] {
 function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const roster = useMemo(()=>readRoster(myTeam),[myTeam])
   const enemySeedRoster = useMemo(()=>readRoster(match.home===myTeam?match.away:match.home),[match.home,match.away,myTeam])
-  const [stage, setStage] = useState<'draft'|'game'|'result'>('draft')
+  const [stage, setStage] = useState<'draft'|'game'|'between'|'result'>('draft')
   const [picks, setPicks] = useState<string[]>(()=>roles.map((_,i)=>{const champion=roster[i]?.champions?.[0];return typeof champion==='string'?champion:champion?.name||championPool[i]}))
   const [enemyPicks, setEnemyPicks] = useState<string[]>(()=>roles.map((_,i)=>{const champion=enemySeedRoster[i]?.champions?.[0];return typeof champion==='string'?champion:champion?.name||championPool[i+5]}))
   const [minute, setMinute] = useState(0)
@@ -36,6 +36,10 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const [events, setEvents] = useState<string[]>(['밴픽을 완료하고 경기를 시작하세요.'])
   const [winner, setWinner] = useState<'blue'|'red'|null>(null)
   const [finished, setFinished] = useState(false)
+  const [gameNumber,setGameNumber]=useState(1)
+  const [blueSeriesWins,setBlueSeriesWins]=useState(0)
+  const [redSeriesWins,setRedSeriesWins]=useState(0)
+  const [lastMapWinner,setLastMapWinner]=useState<'blue'|'red'|null>(null)
 
   const blueName = myTeam
   const redName = match.home === myTeam ? match.away : match.home
@@ -77,10 +81,20 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   useEffect(() => {
     if (stage !== 'game' || minute < 32 || finished) return
     const blueWon = blueKills >= redKills
-    setWinner(blueWon ? 'blue' : 'red')
-    setFinished(true)
-    setStage('result')
-  }, [minute,stage,blueKills,redKills,finished])
+    const nextBlue=blueSeriesWins+(blueWon?1:0)
+    const nextRed=redSeriesWins+(blueWon?0:1)
+    setBlueSeriesWins(nextBlue)
+    setRedSeriesWins(nextRed)
+    setLastMapWinner(blueWon?'blue':'red')
+    setEvents(v=>[`GAME ${gameNumber} 종료 · ${blueWon?blueName:redName} 세트 승리`,...v].slice(0,7))
+    if(nextBlue>=2||nextRed>=2){
+      setWinner(nextBlue>=2?'blue':'red')
+      setFinished(true)
+      setStage('result')
+    } else {
+      setStage('between')
+    }
+  }, [minute,stage,blueKills,redKills,finished,blueSeriesWins,redSeriesWins,gameNumber,blueName,redName])
 
   function startGame() {
     if (picks.some(p=>!p) || enemyPicks.some(p=>!p)) return
@@ -88,12 +102,21 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
     setStage('game')
   }
 
+  function nextGame() {
+    setGameNumber(value=>value+1)
+    setMinute(0)
+    setBlueKills(0)
+    setRedKills(0)
+    setBlueGold(15000)
+    setRedGold(15000)
+    setPaused(false)
+    setEvents([`GAME ${gameNumber+1} 밴픽을 시작합니다.`])
+    setStage('draft')
+  }
+
   function completeSeries() {
-    const blueWon = winner === 'blue'
-    const blueScore = blueWon ? (blueKills - redKills >= 3 ? 2 : 2) : 0
-    const redScore = blueWon ? (blueScore === 2 && blueKills - redKills >= 3 ? 0 : 1) : 2
-    if (match.home === blueName) onFinish(blueScore,redScore)
-    else onFinish(redScore,blueScore)
+    if (match.home === blueName) onFinish(blueSeriesWins,redSeriesWins)
+    else onFinish(redSeriesWins,blueSeriesWins)
   }
 
   const mapPositions = allUnits.map((unit,index)=>{
@@ -112,7 +135,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
       <header className="mc-header">
         <button className="mc-back" onClick={onExit}>← 경기 일정</button>
         <div><span>2026 LCK · MATCH DAY</span><h1>{blueName} <small>VS</small> {redName}</h1></div>
-        <div className="mc-live">{stage==='game'?'LIVE':stage==='result'?'FINISHED':'PRE MATCH'}</div>
+        <div className="mc-live">{stage==='game'?'LIVE':stage==='between'?'BETWEEN MAPS':stage==='result'?'FINISHED':'PRE MATCH'}</div>
       </header>
 
       {stage==='draft' ? (
@@ -143,8 +166,16 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
           <div className="mc-controls"><button onClick={()=>setPaused(v=>!v)}>{paused?'▶ 재개':'Ⅱ 일시정지'}</button>{[1,2,4].map(v=><button key={v} className={speed===v?'active':''} onClick={()=>setSpeed(v)}>{v}x</button>)}<span>게임 시간 32분 종료 후 결과가 반영됩니다.</span></div>
           <div className="mc-lower"><section className="mc-roster-strip"><h3>선수 추적</h3>{mapPositions.map(u=><div key={u.id}><i className={u.team}/><span>{u.name}</span><small>{u.champion}</small></div>)}</section><section className="mc-events"><h3>경기 중계</h3>{events.map((e,i)=><p key={i}>{e}</p>)}</section></div>
         </div>
+      ) : stage==='between' ? (
+        <div className="mc-result mc-between">
+          <span>GAME {gameNumber} COMPLETE</span>
+          <h2>{lastMapWinner==='blue'?blueName:redName} 세트 승리</h2>
+          <p>현재 시리즈 · {blueName} {blueSeriesWins} : {redSeriesWins} {redName}</p>
+          <p>BO3 · 먼저 2세트를 가져가는 팀이 승리합니다.</p>
+          <button onClick={nextGame}>다음 세트 밴픽 진행 →</button>
+        </div>
       ) : (
-        <div className="mc-result"><span>FINAL RESULT</span><h2>{winner==='blue'?blueName:redName} 승리!</h2><p>{blueName} {blueKills} : {redKills} {redName}</p><p>시뮬레이션 결과를 BO3 경기 기록에 반영합니다.</p><button onClick={completeSeries}>경기 결과 저장하고 일정으로</button></div>
+        <div className="mc-result"><span>FINAL RESULT</span><h2>{winner==='blue'?blueName:redName} 승리!</h2><p>{blueName} {blueSeriesWins} : {redSeriesWins} {redName}</p><p>총 {gameNumber}세트 진행 · 선수 능력치와 챔피언 숙련도가 반영됐습니다.</p><button onClick={completeSeries}>경기 결과 저장하고 일정으로</button></div>
       )}
     </div>
   )
