@@ -4,7 +4,9 @@ import { useLeagueMatches, saveMatches, type Match } from './matchData'
 
 const filters = ['전체', '예정', '종료']
 
-type ScheduleProps = { onStartMatch?: (match: Match) => void }\n\nfunction Schedule({ onStartMatch }: ScheduleProps) {
+type ScheduleProps = { onStartMatch?: (match: Match) => void }
+
+function Schedule({ onStartMatch }: ScheduleProps) {
   const matches = useLeagueMatches()
   const [filter, setFilter] = useState('전체')
   const [selectedDate, setSelectedDate] = useState('전체')
