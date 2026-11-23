@@ -409,8 +409,10 @@ const selected =
                 />
               </div>
             ) : (
-              <p>{selected.team} / {selected.role} / {selected.age}세 · 계약 {selected.contractUntil ?? '미정'}년까지</p>
-              <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span></div>
+              <>
+                <p>{selected.team} / {selected.role} / {selected.age}세 · 계약 {selected.contractUntil ?? '미정'}년까지</p>
+                <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span></div>
+              </>
             )}
 
             <h3>선수 능력치</h3>
