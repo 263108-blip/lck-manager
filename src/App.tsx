@@ -20,7 +20,7 @@ function createSnapshot() {
   const values:Record<string,string>={}
   for(let i=0;i<localStorage.length;i++){
     const key=localStorage.key(i)
-    if(key && (key.startsWith('lck-manager-') || key.startsWith('lck-career-'))) {
+    if(key && key !== 'lck-manager-autosave' && (key.startsWith('lck-manager-') || key.startsWith('lck-career-'))) {
       const value=localStorage.getItem(key)
       if(value!==null) values[key]=value
     }
@@ -58,9 +58,15 @@ function App() {
   const standings = buildStandings(matches)
   useEffect(() => {
     if (!club) return
-    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v2') {
-      clubs.forEach(team => localStorage.setItem('lck-manager-roster-' + team.short, JSON.stringify(seedRosterForClub(team))))
-      localStorage.setItem('lck-manager-roster-version', '2027-v2')
+    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v3') {
+      try {
+        const oldHle=JSON.parse(localStorage.getItem('lck-manager-roster-HLE')||'[]')
+        if(oldHle.length===3 && oldHle.some((player:any)=>player.name==='Delight')) {
+          const hle=clubs.find(team=>team.short==='HLE')
+          if(hle) localStorage.setItem('lck-manager-roster-HLE',JSON.stringify(seedRosterForClub(hle)))
+        }
+      } catch {}
+      localStorage.setItem('lck-manager-roster-version', '2027-v3')
     }
     const key = 'lck-manager-roster-' + club.short
     if (!localStorage.getItem(key)) {
@@ -140,8 +146,8 @@ function App() {
       <div className="lobby-actions"><button className="lobby-primary" onClick={()=>{if(club){setShowLobby(false)}else{setShowLobby(false)}}}>{club?'커리어 이어하기':'새 커리어 시작'} <span>→</span></button><button className="lobby-secondary" onClick={()=>{setClub(null);setShowLobby(false)}}>새 게임</button></div>
     </div>
     <div className="lobby-save-area"><div className="lobby-section-title"><div><span>CAREER DATA</span><h2>저장 슬롯</h2></div><small>수동 저장 · 불러오기</small></div>
-      <div className="lobby-slots">{[1,2,3].map(slot=>{const saved=readSaveSlot(slot);const savedClub=saved?.values?.['lck-manager-selected-club'];let savedName='빈 슬롯';try{savedName=savedClub?JSON.parse(savedClub).name:'빈 슬롯'}catch{}return <div className="lobby-slot" key={slot}><div className="lobby-slot-head"><b>SLOT 0{slot}</b><span className={saved?'slot-used':'slot-empty'}>{saved?'SAVED':'EMPTY'}</span></div><strong>{savedName}</strong><small>{saved?.savedAt?new Date(saved.savedAt).toLocaleString('ko-KR'):'저장된 커리어가 없습니다.'}</small><button disabled={!saved} onClick={()=>loadSlot(slot)}>불러오기</button></div>})}</div>
-      <div className="lobby-footnote">자동 저장은 현재 커리어에 적용됩니다. 수동 저장은 슬롯 1~3에 별도로 보관됩니다.</div>
+      <div className="lobby-slots">{[1,2,3].map(slot=>{const saved=readSaveSlot(slot);const savedClub=saved?.values?.['lck-manager-selected-club'];let savedName='빈 슬롯';try{savedName=savedClub?JSON.parse(savedClub).name:'빈 슬롯'}catch{}return <div className="lobby-slot" key={slot}><div className="lobby-slot-head"><b>SLOT 0{slot}</b><span className={saved?'slot-used':'slot-empty'}>{saved?'SAVED':'EMPTY'}</span></div><strong>{savedName}</strong><small>{saved?.savedAt?new Date(saved.savedAt).toLocaleString('ko-KR'):'저장된 커리어가 없습니다.'}</small><div className="lobby-slot-actions"><button disabled={!saved} onClick={()=>loadSlot(slot)}>불러오기</button><button className="slot-save-button" disabled={!club} onClick={()=>{saveSnapshot(slot);setSaveMessage('슬롯 '+slot+' 저장 완료')}}>현재 커리어 저장</button></div></div>})}</div>
+      {saveMessage && <div className="lobby-save-notice">{saveMessage}</div>}<div className="lobby-footnote">자동 저장은 현재 커리어에 적용됩니다. 수동 저장은 슬롯 1~3에 별도로 보관됩니다.</div>
     </div>
   </div>
   if (!club) return <div className="selection-shell"><button className="return-lobby" onClick={()=>setShowLobby(true)}>← 로비로 돌아가기</button><ClubSelection onSelect={selectClub}/></div>
