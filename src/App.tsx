@@ -22,6 +22,10 @@ function App() {
   const standings = buildStandings(matches)
   useEffect(() => {
     if (!club) return
+    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v1') {
+      clubs.forEach(team => localStorage.setItem('lck-manager-roster-' + team.short, JSON.stringify(seedRosterForClub(team))))
+      localStorage.setItem('lck-manager-roster-version', '2027-v1')
+    }
     const key = 'lck-manager-roster-' + club.short
     if (!localStorage.getItem(key)) {
       const seeded = seedRosterForClub(club)
