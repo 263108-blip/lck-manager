@@ -3,11 +3,23 @@ import Roster from './Roster'
 import './App.css'
 import Schedule from './Schedule'
 import LeagueTable from './LeagueTable'
-import { useLeagueMatches, buildStandings, saveMatches, type Match } from './matchData'
+import { useLeagueMatches, buildStandings, saveMatches, initialMatches, type Match } from './matchData'
 import MatchCenter from './MatchCenter'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, seedRosterForClub, type Club } from './ClubManager'
 
 const menus = ['대시보드','선수단','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록']
+function dateFromDay(day:number) { return new Date(2026,10,23+day) }
+function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
+function getSeasonPhase(day:number,matches:Match[]) {
+  const today=dateKey(dateFromDay(day))
+  if(today<'2027-01-13') return 'PRESEASON'
+  if(matches.length>0 && matches.every(match=>match.status==='종료')) return 'OFFSEASON'
+  return 'REGULAR SEASON'
+}
+function phaseLabel(phase:string) {
+  return phase==='PRESEASON'?'프리시즌':phase==='REGULAR SEASON'?'정규 시즌':'시즌 종료'
+}
+
 function readClub(): Club | null {
   try { const raw=localStorage.getItem('lck-manager-selected-club'); if(!raw)return null; const saved=JSON.parse(raw); return clubs.find(c=>c.short===saved.short)||null } catch { return null }
 }
@@ -58,15 +70,12 @@ function App() {
   const standings = buildStandings(matches)
   useEffect(() => {
     if (!club) return
-    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v3') {
-      try {
-        const oldHle=JSON.parse(localStorage.getItem('lck-manager-roster-HLE')||'[]')
-        if(oldHle.length===3 && oldHle.some((player:any)=>player.name==='Delight')) {
-          const hle=clubs.find(team=>team.short==='HLE')
-          if(hle) localStorage.setItem('lck-manager-roster-HLE',JSON.stringify(seedRosterForClub(hle)))
-        }
-      } catch {}
-      localStorage.setItem('lck-manager-roster-version', '2027-v3')
+    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v4') {
+      // 2027 roster report correction: refresh the initial club data once.
+      // Career finances, match history, and saved manager decisions are preserved.
+      clubs.forEach(team => localStorage.setItem('lck-manager-roster-' + team.short, JSON.stringify(seedRosterForClub(team))))
+      localStorage.setItem('lck-manager-roster-version', '2027-v4')
+      window.dispatchEvent(new Event('lck-roster-updated'))
     }
     const key = 'lck-manager-roster-' + club.short
     if (!localStorage.getItem(key)) {
@@ -107,37 +116,42 @@ function App() {
   const myRank = standings.findIndex(t=>t.name===club?.short)+1
   const nextMatch = matches.filter(m=>m.status==='예정'&&(m.home===club?.short||m.away===club?.short)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0]
   const opponent = nextMatch ? (nextMatch.home===club?.short?nextMatch.away:nextMatch.home) : null
-  const displayDate = new Date(2026,10,23+day).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})
+  const gameDate = dateFromDay(day)
+  const seasonPhase = getSeasonPhase(day,matches)
+  const displayDate = gameDate.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})
   function selectClub(selected: Club) {
     const nextRoster = readClubRoster(selected.short)
     localStorage.setItem('lck-manager-roster-' + selected.short, JSON.stringify(nextRoster))
     localStorage.setItem('lck-manager-roster', JSON.stringify(nextRoster))
     localStorage.setItem('lck-manager-selected-club', JSON.stringify(selected))
-    localStorage.setItem('lck-manager-roster-version', '2027-v2')
     setClub(selected)
     setActive('대시보드')
     window.dispatchEvent(new Event('lck-roster-updated'))
   }
   function advanceDay() {
     const next=day+7
+    const nextDate=dateFromDay(next)
+    const currentDate=dateKey(nextDate)
     setDay(next)
     localStorage.setItem('lck-manager-day',String(next))
     if (club) {
       advanceCareerWeek(club)
-      const calendarDate=new Date(2026,10,23+next)
-      const currentDate=[calendarDate.getFullYear(),String(calendarDate.getMonth()+1).padStart(2,'0'),String(calendarDate.getDate()).padStart(2,'0')].join('-')
       const teamPowerFor=(short:string)=>{
         const lineup=readClubRoster(short).filter(player=>player.status==='주전')
         return (lineup.reduce((sum,player)=>sum+player.overall,0)+(5-lineup.length)*58)/5
       }
+      // Every match whose date has passed is resolved, including the manager's
+      // own missed fixture. A missed match must never block the season calendar.
       const progressed=matches.map(match=>{
-        if(match.status!=='예정'||match.date>currentDate||match.home===club.short||match.away===club.short) return match
+        if(match.status!=='예정'||match.date>currentDate) return match
         const difference=teamPowerFor(match.home)-teamPowerFor(match.away)
         const homeWin=Math.random()<Math.max(.18,Math.min(.82,.5+difference*.018))
         const close=Math.random()<.48
         return {...match,status:'종료' as const,homeScore:homeWin?2:(close?1:0),awayScore:homeWin?(close?1:0):2}
       })
       saveMatches(progressed)
+      const missed=progressed.filter((match,index)=>matches[index].status==='예정'&&match.date<=currentDate).length
+      if(missed>0) setSaveMessage(missed+'경기 자동 진행 · 시즌 일정 업데이트')
     }
   }
   if (showLobby) return <div className="lobby-screen">
@@ -160,7 +174,7 @@ function App() {
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
     <main className="main">
-      <header className="topbar"><div><span className="season">2027 PRESEASON</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>1주 진행 →</button></div></header>
+      <header className="topbar"><div><span className="season">2027 {seasonPhase}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{seasonPhase==='OFFSEASON'?'다음 주 진행':'1주 진행 →'}</button></div></header>
       <section className="content">{saveMessage && <div className="save-toast">{saveMessage}</div>}
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
         : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short} onOpenMarket={()=>setActive('이적시장')}/>
@@ -169,8 +183,8 @@ function App() {
         : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive}/>
         : <div className="fm-dashboard">
-          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 준비하세요.</p></div><div className="fm-season"><span>2027 PRESEASON</span><strong>PRESEASON</strong><small>프리시즌 {Math.floor(day/7)+1}주차</small></div></div>
-          <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK · 2027 시즌 프리시즌</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
+          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 운영하세요. 현재 단계: {phaseLabel(seasonPhase)}</p></div><div className="fm-season"><span>2027 SEASON</span><strong>{phaseLabel(seasonPhase)}</strong><small>{seasonPhase==='PRESEASON'?'정규 시즌 개막까지 준비 중':seasonPhase==='REGULAR SEASON'?'정규 시즌 진행 중':'정규 시즌 종료 · 다음 시즌 준비'}</small></div></div>
+          <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK · 2027 {phaseLabel(seasonPhase)}</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
           <div className="fm-stats">
             <div className="fm-stat-card"><span>선수단</span><strong>{roster.length}<small>명</small></strong><p>등록 선수</p></div>
             <div className="fm-stat-card"><span>리그 순위</span><strong>{myRank||'-'}<small>위</small></strong><p>현재 리그 순위</p></div>
