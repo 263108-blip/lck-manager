@@ -61,7 +61,7 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
   }, [stage,paused,speed,finished])
 
   useEffect(() => {
-    if (stage !== 'game' || minute === 0 || minute % 4 !== 0) return
+    if (stage !== 'game' || minute === 0 || minute % 4 !== 0 || minute >= 32) return
     const teamRating = roster.reduce((sum, player) => sum + (player.overall ?? 85), 0) / Math.max(1, roster.length)
     const blueChance = Math.max(0.25, Math.min(0.75, 0.5 + (teamRating - 85) * 0.015))
     const blueWins = Math.random() < blueChance
