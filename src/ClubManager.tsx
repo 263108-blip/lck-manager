@@ -136,11 +136,11 @@ export function ClubOffice({club,page,onChangePage}:{club:Club;page:string;onCha
   const [scoutTarget,setScoutTarget]=useState<PlayerData|null>(null)
   const [sponsorChoice,setSponsorChoice]=useState('프리미엄 파트너')
   const [historyFilter,setHistoryFilter]=useState('전체')
-  useEffect(()=>{save(careerKey(club.short),career)},[club.short,career])
+  useEffect(()=>{save(careerKey(club.short),career)},[club.short,career])\n  useEffect(()=>{const refresh=()=>setCareer(readCareer(team));window.addEventListener('lck-career-updated',refresh);return()=>window.removeEventListener('lck-career-updated',refresh)},[club.short])
   useEffect(()=>{setRoster(readClubRoster(club.short));setCareer(readCareer(team));setSelectedPlayer(null)},[club.short])
   const payroll=roster.reduce((sum,p)=>sum+p.salary,0)+career.staff.reduce((sum,s)=>sum+s.salary,0)
   const marketPlayers=useMemo(()=>{
-    const all=[...seasonClubs.flatMap(c=>readClubRoster(c.short)),...marketPool]
+    const activePlayers=seasonClubs.flatMap(c=>readClubRoster(c.short))\n    const occupiedIds=new Set(activePlayers.map(p=>p.id))\n    const all=[...activePlayers,...marketPool.filter(p=>(p.team==='FA'||p.contractStatus==='미확정')&&!occupiedIds.has(p.id))]
     const unique=new Map<string,PlayerData>()
     all.forEach(p=>{if(!unique.has(p.id))unique.set(p.id,p)})
     return [...unique.values()].filter(p=>p.team!==club.short&&!career.signedPlayers.includes(p.id)&&!career.releasedPlayers.includes(p.id))
