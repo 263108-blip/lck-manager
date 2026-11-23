@@ -1,9 +1,7 @@
 
 import type { Standing } from './matchData'
 
-type Props = {
-  standings: Standing[]
-}
+type Props = {\n  standings: Standing[]\n  myTeam?: string\n}
 
 function LeagueTable({ standings, myTeam = 'T1' }: Props) {
   return (
