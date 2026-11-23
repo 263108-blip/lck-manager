@@ -132,11 +132,6 @@ export default function MatchCenter({ match, onFinish, onExit }: Props) {
 
   const timeText = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
 
-  const addEvent = (message: string, type: EventItem['type'] = 'info') => {
-    const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`
-    setEvents(old => [{ time, message, type }, ...old].slice(0, 35))
-  }
-
   const startGame = () => {
     const blue: Fighter[] = bluePlayers.map((p, i) => ({
       id: i,
@@ -230,7 +225,7 @@ export default function MatchCenter({ match, onFinish, onExit }: Props) {
           setEvents(old => [{
             time,
             message: `${killer.name} (${killer.champion})이(가) ${victim.name}을(를) 처치했습니다!`,
-            type: 'kill',
+            type: 'kill' as const,
           }, ...old].slice(0, 35))
         }
       }
@@ -243,7 +238,7 @@ export default function MatchCenter({ match, onFinish, onExit }: Props) {
         setEvents(old => [{
           time,
           message: blueWins ? 'T1이 드래곤을 처치했습니다!' : `${match.away}가 드래곤을 처치했습니다!`,
-          type: 'objective',
+          type: 'objective' as const,
         }, ...old].slice(0, 35))
       }
     }, 1000)
