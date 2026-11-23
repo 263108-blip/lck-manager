@@ -23,6 +23,11 @@ export const initialMatches: Match[] = [
   { id: 5, date: '2026-01-12', time: '17:00', home: 'T1', away: 'DK', status: '종료', homeScore: 2, awayScore: 0 },
   { id: 6, date: '2026-01-12', time: '19:00', home: 'GEN.G', away: 'KT', status: '종료', homeScore: 2, awayScore: 1 },
   { id: 7, date: '2026-01-13', time: '17:00', home: 'HLE', away: 'T1', status: '종료', homeScore: 1, awayScore: 2 },
+  { id: 8, date: '2026-01-17', time: '17:00', home: 'DRX', away: 'BNK FEARX', status: '예정' },
+  { id: 9, date: '2026-01-17', time: '19:00', home: 'NS', away: 'BRO', status: '예정' },
+  { id: 10, date: '2026-01-18', time: '17:00', home: 'KDF', away: 'DRX', status: '예정' },
+  { id: 11, date: '2026-01-18', time: '19:00', home: 'BNK FEARX', away: 'NS', status: '예정' },
+  { id: 12, date: '2026-01-19', time: '17:00', home: 'BRO', away: 'KDF', status: '예정' },
 ]
 
 export const teams = [
