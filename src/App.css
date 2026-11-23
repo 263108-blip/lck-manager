@@ -326,3 +326,11 @@ body{min-width:320px;background:#090d15}
 .lobby-footnote{margin-top:14px;color:#65768b;font-size:9px}
 @media(max-width:800px){.sidebar{width:190px;flex-basis:190px}.content{padding:22px 18px}.topbar{padding:0 18px}.lobby-slots{grid-template-columns:1fr}.lobby-hero{padding:58px 0 48px}}
 @media(max-width:560px){.app{display:block}.sidebar{width:100%;min-height:auto;padding:12px}.sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr));max-height:230px;overflow:auto}.sidebar-bottom{margin-top:12px}.topbar{height:auto;min-height:64px;gap:10px;flex-wrap:wrap;padding:12px}.topbar-actions{flex-wrap:wrap}.profile{display:none}.lobby-actions{flex-wrap:wrap}.lobby-actions button{flex:1}.lobby-build{font-size:7px}}
+
+
+.lobby-slot-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:13px}
+.lobby-slot-actions>button{margin:0;padding:9px 5px;font-size:9px}
+.lobby-slot-actions .slot-save-button{border-color:#477e72;background:#19362f;color:#8ce6c9}
+.lobby-save-notice{margin-top:12px;padding:9px 12px;border:1px solid #477e72;border-radius:6px;background:#17332e;color:#9aecd3;font-size:10px}
+.topbar-actions button:hover,.nav-item:hover,.lobby-slot>button:not(:disabled):hover{filter:brightness(1.16)}
+@media(max-width:520px){.lobby-slot-actions{grid-template-columns:1fr 1fr}}
