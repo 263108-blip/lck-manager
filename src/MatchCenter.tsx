@@ -33,6 +33,12 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const [redKills, setRedKills] = useState(0)
   const [blueGold, setBlueGold] = useState(15000)
   const [redGold, setRedGold] = useState(15000)
+  const [blueTowers,setBlueTowers]=useState(0)
+  const [redTowers,setRedTowers]=useState(0)
+  const [blueDragons,setBlueDragons]=useState(0)
+  const [redDragons,setRedDragons]=useState(0)
+  const [blueBarons,setBlueBarons]=useState(0)
+  const [redBarons,setRedBarons]=useState(0)
   const [events, setEvents] = useState<string[]>(['밴픽을 완료하고 경기를 시작하세요.'])
   const [winner, setWinner] = useState<'blue'|'red'|null>(null)
   const [finished, setFinished] = useState(false)
@@ -68,14 +74,21 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
     if (stage !== 'game' || minute === 0 || minute % 4 !== 0 || minute >= 32) return
     const blueChance = Math.max(0.12, Math.min(0.88, 0.5 + (blueRating-redRating)*0.022 + draftEdge*0.035))
     const blueWins = Math.random() < blueChance
-    if (blueWins) {
-      setBlueKills(v=>v+1); setBlueGold(v=>v+850)
-      setEvents(v=>[`[${String(minute).padStart(2,'0')}:00] ${blueName} 팀이 교전에서 이득을 봤습니다.`,...v].slice(0,7))
-    } else {
-      setRedKills(v=>v+1); setRedGold(v=>v+850)
-      setEvents(v=>[`[${String(minute).padStart(2,'0')}:00] ${redName} 팀이 교전에서 이득을 봤습니다.`,...v].slice(0,7))
+    const winningName=blueWins?blueName:redName
+    if (blueWins) { setBlueKills(v=>v+1); setBlueGold(v=>v+850) }
+    else { setRedKills(v=>v+1); setRedGold(v=>v+850) }
+    const newEvents=[`[${String(minute).padStart(2,'0')}:00] ${winningName} 교전 승리 · 킬 +1 · 골드 +850`]
+    if(minute===8||minute===16||minute===24){
+      if(blueWins){setBlueDragons(v=>v+1);setBlueGold(v=>v+300)} else {setRedDragons(v=>v+1);setRedGold(v=>v+300)}
+      newEvents.unshift(`[${String(minute).padStart(2,'0')}:00] ${winningName} 드래곤 처치`)
+    } else if(minute===12||minute===20){
+      if(blueWins){setBlueTowers(v=>v+1);setBlueGold(v=>v+500)} else {setRedTowers(v=>v+1);setRedGold(v=>v+500)}
+      newEvents.unshift(`[${String(minute).padStart(2,'0')}:00] ${winningName} 포탑 파괴`)
+    } else if(minute===28){
+      if(blueWins){setBlueBarons(v=>v+1);setBlueGold(v=>v+1500)} else {setRedBarons(v=>v+1);setRedGold(v=>v+1500)}
+      newEvents.unshift(`[${String(minute).padStart(2,'0')}:00] ${winningName} 내셔 남작 처치`)
     }
-    if (minute === 12 || minute === 24) setEvents(v=>[`[${minute}:00] 드래곤 오브젝트가 등장했습니다.`,...v].slice(0,7))
+    setEvents(v=>[...newEvents,...v].slice(0,9))
   }, [minute,stage,blueName,redName,blueRating,redRating,draftEdge])
 
   useEffect(() => {
@@ -109,6 +122,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
     setRedKills(0)
     setBlueGold(15000)
     setRedGold(15000)
+    setBlueTowers(0);setRedTowers(0);setBlueDragons(0);setRedDragons(0);setBlueBarons(0);setRedBarons(0)
     setPaused(false)
     setEvents([`GAME ${gameNumber+1} 밴픽을 시작합니다.`])
     setStage('draft')
@@ -134,7 +148,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
     <div className="match-center">
       <header className="mc-header">
         <button className="mc-back" onClick={onExit}>← 경기 일정</button>
-        <div><span>2026 LCK · MATCH DAY</span><h1>{blueName} <small>VS</small> {redName}</h1></div>
+        <div><span>2027 LCK · MATCH DAY</span><h1>{blueName} <small>VS</small> {redName}</h1></div>
         <div className="mc-live">{stage==='game'?'LIVE':stage==='between'?'BETWEEN MAPS':stage==='result'?'FINISHED':'PRE MATCH'}</div>
       </header>
 
@@ -150,16 +164,23 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
         </div>
       ) : stage==='game' ? (
         <div className="mc-game">
-          <div className="mc-series-score">BO3 · GAME {gameNumber} · SERIES {blueSeriesWins}:{redSeriesWins}</div><div className="mc-scorebar"><div><span>{blueName}</span><strong>{blueKills}</strong><small>{blueGold.toLocaleString()} G</small></div><div className="mc-clock">{String(minute).padStart(2,'0')}:00</div><div><span>{redName}</span><strong>{redKills}</strong><small>{redGold.toLocaleString()} G</small></div></div>
+          <div className="mc-broadcast-top"><div className="mc-broadcast-label"><b>LCK</b><span>2027 SEASON · LIVE BROADCAST</span></div><div className="mc-series-score">BO3 <i/> GAME {gameNumber} <i/> SERIES {blueSeriesWins} : {redSeriesWins}</div><span className="mc-live-pill"><i/> LIVE</span></div>
+          <div className="mc-scorebar"><div className="mc-score-team blue-side"><small>BLUE SIDE</small><strong>{blueName}</strong><b>{blueKills}</b><span>{blueGold.toLocaleString()} GOLD</span></div><div className="mc-clock"><strong>{String(minute).padStart(2,'0')}:00</strong><small>GAME {gameNumber}</small></div><div className="mc-score-team red-side"><small>RED SIDE</small><strong>{redName}</strong><b>{redKills}</b><span>{redGold.toLocaleString()} GOLD</span></div></div>
+          <div className="mc-objective-strip"><div><span>포탑</span><b>{blueTowers}</b><i>—</i><b>{redTowers}</b></div><div><span>드래곤</span><b>{blueDragons}</b><i>—</i><b>{redDragons}</b></div><div><span>바론</span><b>{blueBarons}</b><i>—</i><b>{redBarons}</b></div><div className="mc-gold-diff">골드 차이 <b>{Math.abs(blueGold-redGold).toLocaleString()}</b></div></div>
           <div className="mc-arena">
-            <div className="mc-map-label">SUMMONER'S RIFT · LIVE SIMULATION</div>
-            <svg viewBox={trackedUnit ? `${Math.max(0, trackedUnit.x - 22)} ${Math.max(0, trackedUnit.y - 22)} 44 44` : "0 0 100 100"} preserveAspectRatio="xMidYMid slice" className="mc-map">
-              <defs><linearGradient id="riftbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#193e3c"/><stop offset="100%" stopColor="#23344a"/></linearGradient></defs>
-              <rect width="100" height="100" fill="url(#riftbg)"/>
-              <path d="M8 90 L90 8 M8 8 L90 90 M50 0 L50 100" stroke="#547267" strokeWidth="2" opacity=".5"/>
-              <path d="M10 85 L85 10 M10 15 L85 90" stroke="#a4b8a0" strokeWidth=".7" strokeDasharray="2 2" opacity=".5"/>
-              <circle cx="50" cy="50" r="9" fill="#b49a58" opacity=".35"/>
-              {mapPositions.map(unit=><g key={unit.id} transform={`translate(${unit.x} ${unit.y})`}><circle r="3.2" fill={unit.team==='blue'?'#54a9ff':'#f07182'} stroke="#fff" strokeWidth=".6"/><text y=".9" textAnchor="middle" fontSize="2.2" fill="#07111d" fontWeight="bold">{unit.role}</text></g>)}
+            <div className="mc-map-label">SUMMONER’S RIFT · LIVE MAP</div>
+            <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" className="mc-map">
+              <defs><linearGradient id="riftbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#142e2d"/><stop offset="48%" stopColor="#254b40"/><stop offset="100%" stopColor="#182d3d"/></linearGradient><pattern id="grass" width="5" height="5" patternUnits="userSpaceOnUse"><circle cx="1" cy="2" r=".25" fill="#b5c9a0" opacity=".2"/></pattern></defs>
+              <rect width="100" height="100" fill="url(#riftbg)"/><rect width="100" height="100" fill="url(#grass)"/>
+              <path d="M5 95 L95 5 L100 10 L10 100Z" fill="#315b4c" opacity=".9"/><path d="M5 5 L95 95 L100 90 L10 0Z" fill="#315b4c" opacity=".75"/>
+              <path d="M7 93 L93 7 M7 7 L93 93" stroke="#b9c5a2" strokeWidth="1.7" opacity=".72"/>
+              <path d="M0 52 Q22 38 36 52 T66 52 T100 45" fill="none" stroke="#5b9b9a" strokeWidth="5" opacity=".45"/>
+              <path d="M0 52 Q22 38 36 52 T66 52 T100 45" fill="none" stroke="#83c3bd" strokeWidth=".8" opacity=".65"/>
+              <path d="M17 83 Q35 62 50 50 Q65 38 83 17 M17 17 Q35 38 50 50 Q65 62 83 83" fill="none" stroke="#7a8d68" strokeWidth="5" opacity=".35"/>
+              <g fill="#d2c7a0" stroke="#574f3e" strokeWidth=".5"><path d="M7 91l3-5 3 5z"/><path d="M91 9l3-5 3 5z"/><path d="M47 50l3-5 3 5z"/></g>
+              <g fill="#e6c66f" opacity=".85"><circle cx="50" cy="50" r="3.5"/><circle cx="15" cy="85" r="2"/><circle cx="85" cy="15" r="2"/></g>
+              <g fill="#b9d0ad" opacity=".25">{Array.from({length:18},(_,i)=><circle key={i} cx={(i*17)%97+1} cy={(i*29)%97+1} r="1.4"/>)}</g>
+              {mapPositions.map(unit=><g key={unit.id} transform={'translate(' + unit.x + ' ' + unit.y + ')'}><circle r="3.6" fill={unit.team==='blue'?'#42a5ff':'#f06478'} stroke="#f6f8fb" strokeWidth=".8"/><circle r="1.15" fill="#101722"/><text y=".75" textAnchor="middle" fontSize="1.7" fill="#fff" fontWeight="bold">{unit.role}</text></g>)}
             </svg>
             <div className="mc-camera"><span>PLAYER TRACKING</span><strong>{trackedUnit?.name ?? '선수'}</strong><small>개별 선수 중심으로 화면을 확대합니다</small></div>
           </div>
