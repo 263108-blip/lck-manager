@@ -43,7 +43,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const [finished, setFinished] = useState(false)
 
   const blueName = myTeam
-  const redName = match.home === 'T1' ? match.away : match.home
+  const redName = match.home === myTeam ? match.away : match.home
   const blueUnits: Unit[] = roster.map((p,i)=>({id:`b${i}`,name:p.name,role:roles[i],team:'blue',champion:picks[i],power:p.overall ?? 85}))
   const redUnits: Unit[] = roles.map((role,i)=>({id:`r${i}`,name:`${redName} ${role}`,role,team:'red',champion:enemyPicks[i],power:84+(i%3)*2}))
   const allUnits = [...blueUnits,...redUnits]
