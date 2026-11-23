@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Match } from './matchData'
+import { seasonClubs } from './seasonData'
 import './MatchCenter.css'
 
 type Role = 'TOP' | 'JNG' | 'MID' | 'ADC' | 'SUP'
@@ -9,28 +10,21 @@ type Unit = { id: string; name: string; role: Role; team: 'blue' | 'red'; champi
 
 const roles: Role[] = ['TOP', 'JNG', 'MID', 'ADC', 'SUP']
 const championPool = ['제이스','그웬','레넥톤','오른','아트록스','바이','리 신','비에고','신 짜오','아리','아지르','오리아나','요네','루시안','징크스','카이사','애쉬','진','라칸','노틸러스','레오나','렐','쓰레쉬','브라움','헤카림','렝가','암베사','오로라','브라이어','나피리','스몰더']
-const defaultPlayers: Player[] = [
-  {name:'Zeus',role:'TOP',overall:96,champions:['제이스','그웬','럼블']},
-  {name:'Oner',role:'JNG',overall:95,champions:['바이','리 신','비에고']},
-  {name:'Faker',role:'MID',overall:99,champions:['아지르','오리아나','아리']},
-  {name:'Gumayusi',role:'ADC',overall:95,champions:['진','징크스','카이사']},
-  {name:'Keria',role:'SUP',overall:97,champions:['라칸','노틸러스','레나타 글라스크']},
-]
-
-function readRoster(): Player[] {
+function readRoster(teamShort:string): Player[] {
   try {
-    const raw = localStorage.getItem('lck-manager-roster')
-    if (!raw) return defaultPlayers
-    const parsed = JSON.parse(raw) as Player[]
-    return roles.map(role => parsed.find(p => p.role === role && (p as any).status === '주전') || parsed.find(p => p.role === role) || defaultPlayers.find(p => p.role === role)!)
-  } catch { return defaultPlayers }
+    const raw=localStorage.getItem('lck-manager-roster-'+teamShort)
+    const parsed=raw?JSON.parse(raw) as Player[]:(seasonClubs.find(t=>t.short===teamShort)?.players??[])
+    return roles.map(role=>parsed.find(p=>p.role===role&&(p as any).status==='주전')||parsed.find(p=>p.role===role)||{name:'공석',role,overall:55,champions:[]})
+  } catch {
+    return roles.map(role=>({name:'공석',role,overall:55,champions:[]}))
+  }
 }
 
 function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
-  const roster = useMemo(readRoster, [])
+  const roster = useMemo(()=>readRoster(myTeam),[myTeam])
   const [stage, setStage] = useState<'draft'|'game'|'result'>('draft')
-  const [picks, setPicks] = useState<string[]>(['제이스','바이','아지르','징크스','라칸'])
-  const [enemyPicks, setEnemyPicks] = useState<string[]>(['레넥톤','비에고','오리아나','카이사','노틸러스'])
+  const [picks, setPicks] = useState<string[]>(()=>roles.map((role,i)=>roster[i]?.champions?.[0]||championPool[i]))
+  const [enemyPicks, setEnemyPicks] = useState<string[]>(()=>roles.map((role,i)=>readRoster(match.home===myTeam?match.away:match.home)[i]?.champions?.[0]||championPool[i+5]))
   const [minute, setMinute] = useState(0)
   const [speed, setSpeed] = useState(2)
   const [paused, setPaused] = useState(false)
@@ -44,9 +38,14 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
 
   const blueName = myTeam
   const redName = match.home === myTeam ? match.away : match.home
-  const blueUnits: Unit[] = roster.map((p,i)=>({id:`b${i}`,name:p.name,role:roles[i],team:'blue',champion:picks[i],power:p.overall ?? 85}))
-  const redUnits: Unit[] = roles.map((role,i)=>({id:`r${i}`,name:`${redName} ${role}`,role,team:'red',champion:enemyPicks[i],power:84+(i%3)*2}))
+  const enemyRoster = useMemo(()=>readRoster(redName),[redName])
+  const blueUnits: Unit[] = roles.map((role,i)=>({id:`b${i}`,name:roster[i]?.name??'공석',role,team:'blue',champion:picks[i],power:roster[i]?.overall??55}))
+  const redUnits: Unit[] = roles.map((role,i)=>({id:`r${i}`,name:enemyRoster[i]?.name??'공석',role,team:'red',champion:enemyPicks[i],power:enemyRoster[i]?.overall??55}))
   const allUnits = [...blueUnits,...redUnits]
+  const blueRating=blueUnits.reduce((sum,p)=>sum+p.power,0)/5
+  const redRating=redUnits.reduce((sum,p)=>sum+p.power,0)/5
+  const draftFit=(players:Player[],selected:string[])=>players.reduce((sum,p,i)=>sum+((p.champions??[]).includes(selected[i])?3:0),0)/5
+  const draftEdge=draftFit(roster,picks)-draftFit(enemyRoster,enemyPicks)
 
   useEffect(() => {
     if (stage !== 'game' || paused || finished) return
@@ -62,8 +61,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
 
   useEffect(() => {
     if (stage !== 'game' || minute === 0 || minute % 4 !== 0 || minute >= 32) return
-    const teamRating = roster.reduce((sum, player) => sum + (player.overall ?? 85), 0) / Math.max(1, roster.length)
-    const blueChance = Math.max(0.25, Math.min(0.75, 0.5 + (teamRating - 85) * 0.015))
+    const blueChance = Math.max(0.12, Math.min(0.88, 0.5 + (blueRating-redRating)*0.022 + draftEdge*0.035))
     const blueWins = Math.random() < blueChance
     if (blueWins) {
       setBlueKills(v=>v+1); setBlueGold(v=>v+850)
@@ -73,7 +71,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
       setEvents(v=>[`[${String(minute).padStart(2,'0')}:00] ${redName} 팀이 교전에서 이득을 봤습니다.`,...v].slice(0,7))
     }
     if (minute === 12 || minute === 24) setEvents(v=>[`[${minute}:00] 드래곤 오브젝트가 등장했습니다.`,...v].slice(0,7))
-  }, [minute,stage,blueName,redName])
+  }, [minute,stage,blueName,redName,blueRating,redRating,draftEdge])
 
   useEffect(() => {
     if (stage !== 'game' || minute < 32 || finished) return
