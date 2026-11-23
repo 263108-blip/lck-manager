@@ -19,6 +19,7 @@ export type PlayerData = {
   contractStatus: '확정' | '계약 유지' | '미확정' | 'FA'
   team: string
   status: '주전' | '후보'
+  morale?: number
 }
 export type ClubData = {
   name: string
