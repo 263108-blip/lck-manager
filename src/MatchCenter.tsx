@@ -4,7 +4,7 @@ import './MatchCenter.css'
 
 type Role = 'TOP' | 'JNG' | 'MID' | 'ADC' | 'SUP'
 type Player = { name: string; role: Role; overall?: number; champions?: (string | { name: string; mastery?: number })[] }
-type Props = { match: Match; onFinish: (homeScore: number, awayScore: number) => void; onExit: () => void }
+type Props = { match: Match; myTeam?: string; onFinish: (homeScore: number, awayScore: number) => void; onExit: () => void }
 type Unit = { id: string; name: string; role: Role; team: 'blue' | 'red'; champion: string; power: number }
 
 const roles: Role[] = ['TOP', 'JNG', 'MID', 'ADC', 'SUP']
@@ -26,7 +26,7 @@ function readRoster(): Player[] {
   } catch { return defaultPlayers }
 }
 
-function MatchCenter({ match, onFinish, onExit }: Props) {
+function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const roster = useMemo(readRoster, [])
   const [stage, setStage] = useState<'draft'|'game'|'result'>('draft')
   const [picks, setPicks] = useState<string[]>(['제이스','바이','아지르','징크스','라칸'])
@@ -42,7 +42,7 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
   const [winner, setWinner] = useState<'blue'|'red'|null>(null)
   const [finished, setFinished] = useState(false)
 
-  const blueName = 'T1'
+  const blueName = myTeam
   const redName = match.home === 'T1' ? match.away : match.home
   const blueUnits: Unit[] = roster.map((p,i)=>({id:`b${i}`,name:p.name,role:roles[i],team:'blue',champion:picks[i],power:p.overall ?? 85}))
   const redUnits: Unit[] = roles.map((role,i)=>({id:`r${i}`,name:`${redName} ${role}`,role,team:'red',champion:enemyPicks[i],power:84+(i%3)*2}))
@@ -93,7 +93,7 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
     const blueWon = winner === 'blue'
     const blueScore = blueWon ? (blueKills - redKills >= 3 ? 2 : 2) : 0
     const redScore = blueWon ? (blueScore === 2 && blueKills - redKills >= 3 ? 0 : 1) : 2
-    if (match.home === 'T1') onFinish(blueScore,redScore)
+    if (match.home === blueName) onFinish(blueScore,redScore)
     else onFinish(redScore,blueScore)
   }
 
