@@ -184,11 +184,14 @@ export function ClubOffice({club,page,onChangePage}:{club:Club;page:string;onCha
   const [offerYears,setOfferYears]=useState('2')
   const [training,setTraining]=useState(career.training)
   const [scoutTarget,setScoutTarget]=useState<PlayerData|null>(null)
-  const [sponsorChoice,setSponsorChoice]=useState('프리미엄 파트너')\n  const [interviewPlayerId,setInterviewPlayerId]=useState('')\n  const [mediaChoice,setMediaChoice]=useState('선수단 보호')
+  const [sponsorChoice,setSponsorChoice]=useState('프리미엄 파트너')
+  const [interviewPlayerId,setInterviewPlayerId]=useState('')
+  const [mediaChoice,setMediaChoice]=useState('선수단 보호')
   useEffect(()=>{save(careerKey(club.short),career)},[club.short,career])
   useEffect(()=>{const refresh=()=>setCareer(readCareer(team));window.addEventListener('lck-career-updated',refresh);return()=>window.removeEventListener('lck-career-updated',refresh)},[club.short])
   useEffect(()=>{setRoster(readClubRoster(club.short));setCareer(readCareer(team));setSelectedPlayer(null)},[club.short])
-  const payroll=roster.reduce((sum,p)=>sum+p.salary,0)+career.staff.reduce((sum,s)=>sum+s.salary,0)\n  const interviewee=roster.find(p=>p.id===interviewPlayerId)||roster[0]
+  const payroll=roster.reduce((sum,p)=>sum+p.salary,0)+career.staff.reduce((sum,s)=>sum+s.salary,0)
+  const interviewee=roster.find(p=>p.id===interviewPlayerId)||roster[0]
   const marketPlayers=useMemo(()=>{
     const activePlayers=seasonClubs.flatMap(c=>readClubRoster(c.short))
     const occupiedIds=new Set(activePlayers.map(p=>p.id))
