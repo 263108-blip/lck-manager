@@ -63,3 +63,5 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 
 .schedule-start-match{width:100%;margin:0 0 14px;padding:13px;border:1px solid #d92e46;border-radius:8px;background:linear-gradient(110deg,#d92e46,#a92340);color:#fff;font-size:12px;font-weight:800;box-shadow:0 7px 18px #d92e4620}
 .schedule-start-match:hover,.fm-primary-button:hover{filter:brightness(1.1)}
+
+#root{width:100%;max-width:none;margin:0;text-align:left;border:0;min-height:100vh;display:block}
