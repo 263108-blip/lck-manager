@@ -71,14 +71,10 @@ function loadRoster(teamShort: string): Player[] {
   return (readClubRoster(teamShort) as Player[]) || initialPlayers
 }
 
-export default function Roster({ teamName = 'T1', teamShort = 'T1' }: { teamName?: string; teamShort?: string }) {
+export default function Roster({ teamName = 'T1', teamShort = 'T1', onOpenMarket }: { teamName?: string; teamShort?: string; onOpenMarket?: () => void }) {
   const [roster, setRoster] = useState<Player[]>(() => loadRoster(teamShort))
   const [role, setRole] = useState('전체')
   const [selectedName, setSelectedName] = useState('Zeus')
-  const [recruiting, setRecruiting] = useState(false)
-  const [editing, setEditing] = useState(false)
-  const [newName, setNewName] = useState('')
-  const [newRole, setNewRole] = useState('TOP')
 const [newChampion, setNewChampion] = useState('')
 const [newMastery, setNewMastery] = useState(70)
 const [renewYears,setRenewYears] = useState(1)
@@ -110,53 +106,6 @@ const substitutes = roster
   )
 
   const teamPower = Math.round(starters.reduce((sum, p) => sum + calculateOverall(p), 0) / 5 + (5-starters.length)*11)
-
-  function updateSelected(key: keyof Player, value: string | number) {
-    if (!selected) return
-
-    const updated = { ...selected, [key]: value }
-    if (['lane', 'teamfight', 'macro', 'mechanics'].includes(key)) {
-      updated.overall = calculateOverall(updated)
-    }
-
-    setRoster(prev =>
-      prev.map(p => p.name === selected.name ? updated : p)
-    )
-  }
-
-  function recruitPlayer() {
-    const name = newName.trim()
-
-    if (!name) {
-      alert('선수 이름을 입력해 주세요.')
-      return
-    }
-
-    if (roster.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-      alert('이미 등록된 선수입니다.')
-      return
-    }
-
-    const player: Player = {
-      name,
-      role: newRole,
-      team: teamName,
-      age: 20,
-      overall: 70,
-      lane: 70,
-      teamfight: 70,
-      macro: 70,
-      mechanics: 70,
-      champions: ['미등록'],
-      status: '후보',
-      potential: 85, consistency: 70, clutch: 70, salary: 1, value: 2, contractUntil: 2027, contractStatus: '확정',
-    }
-
-    setRoster(prev => [...prev, player])
-    setSelectedName(player.name)
-    setNewName('')
-    setRecruiting(false)
-  }
 
   function releasePlayer() {
     if (!selected) return
@@ -311,25 +260,8 @@ const selected =
           <h1>선수단 관리</h1>
           <p>선수 영입부터 능력치와 팀 전력까지 관리하세요.</p>
         </div>
-        <button onClick={() => setRecruiting(!recruiting)}>
-          {recruiting ? '영입 취소' : '+ 선수 영입'}
-        </button>
+        <button onClick={onOpenMarket}>이적시장으로 이동 →</button>
       </div>
-
-      {recruiting && (
-        <div className="recruit-form">
-          <h3>신규 선수 영입</h3>
-          <input
-            value={newName}
-            onChange={e => setNewName(e.target.value)}
-            placeholder="선수 이름"
-          />
-          <select value={newRole} onChange={e => setNewRole(e.target.value)}>
-            {roles.slice(1).map(r => <option key={r}>{r}</option>)}
-          </select>
-          <button onClick={recruitPlayer}>영입하기</button>
-        </div>
-      )}
 
       <div className="roster-summary">
         <div><span>전체 선수</span><strong>{roster.length}명</strong></div>
@@ -359,7 +291,6 @@ const selected =
               className={`player-card ${selected?.name === p.name ? 'selected' : ''}`}
               onClick={() => {
                 setSelectedName(p.name)
-                setEditing(false)
               }}
             >
               <span className="player-role">{p.role}</span>
@@ -398,37 +329,8 @@ const selected =
 
             <h3>선수 정보</h3>
 
-            {editing ? (
-              <div className="player-edit-info">
-                <label>포지션</label>
-                <select
-                  value={selected.role}
-                  onChange={e => updateSelected('role', e.target.value)}
-                >
-                  {roles.slice(1).map(r => <option key={r}>{r}</option>)}
-                </select>
-
-                <label>나이</label>
-                <input
-                  type="number"
-                  min="16"
-                  max="50"
-                  value={selected.age}
-                  onChange={e => updateSelected('age', Math.max(16, Number(e.target.value)))}
-                />
-
-                <label>소속팀</label>
-                <input
-                  value={selected.team}
-                  onChange={e => updateSelected('team', e.target.value)}
-                />
-              </div>
-            ) : (
-              <>
-                <p>{selected.team} / {selected.role} / {selected.age}세 · 계약 {selected.contractUntil ?? '미정'}년까지</p>
-                <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span><span>사기 <b>{selected.morale ?? 76}/100</b></span></div>
-              </>
-            )}
+            <p>{selected.team} / {selected.role} / {selected.age}세 · 계약 {selected.contractUntil ?? '미정'}년까지</p>
+            <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span><span>사기 <b>{selected.morale ?? 76}/100</b></span></div>
 
             <h3>선수 능력치</h3>
 
@@ -442,22 +344,7 @@ const selected =
             ] as const).map(([key, label]) => (
               <div className="stat-row" key={key}>
                 <span>{label}</span>
-                {editing ? (
-                  <input
-                    type="number"
-                    min="1"
-                    max="100"
-                    value={selected[key] ?? 75}
-                    onChange={e =>
-                      updateSelected(
-                        key,
-                        Math.min(100, Math.max(1, Number(e.target.value)))
-                      )
-                    }
-                  />
-                ) : (
-                  <strong>{selected[key]}</strong>
-                )}
+                <strong>{selected[key] ?? 75}</strong>
                 <div className="stat-bar">
                   <div style={{ width: `${selected[key] ?? 75}%` }} />
                 </div>
@@ -525,21 +412,11 @@ const selected =
 </div>
 
             <div className="edit-actions">
-              {editing ? (
-                <button onClick={() => setEditing(false)}>수정 완료</button>
-              ) : (
-                <>
-                  <button onClick={() => setEditing(true)}>정보 및 능력치 수정</button>
-                  <button onClick={changeStatus}>
-                    {selected.status === '주전' ? '후보로 변경' : '주전으로 변경'}
-                  </button>
-                  <div className="contract-renew-control"><select value={renewYears} onChange={e=>setRenewYears(Number(e.target.value))}><option value={1}>1년</option><option value={2}>2년</option><option value={3}>3년</option></select><button onClick={renewContract}>계약 연장</button></div>
-                  <button className="release-btn" onClick={releasePlayer}>
-                    선수 방출
-                  </button>
-                </>
-              )}
+              <button onClick={changeStatus}>{selected.status === '주전' ? '후보로 변경' : '주전으로 변경'}</button>
+              <div className="contract-renew-control"><select value={renewYears} onChange={e=>setRenewYears(Number(e.target.value))}><option value={1}>1년</option><option value={2}>2년</option><option value={3}>3년</option></select><button onClick={renewContract}>계약 연장</button></div>
+              <button className="release-btn" onClick={releasePlayer}>선수 방출</button>
             </div>
+
           </div>
         )}
       </div>
