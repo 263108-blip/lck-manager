@@ -22,9 +22,10 @@ function readRoster(teamShort:string): Player[] {
 
 function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const roster = useMemo(()=>readRoster(myTeam),[myTeam])
+  const enemySeedRoster = useMemo(()=>readRoster(match.home===myTeam?match.away:match.home),[match.home,match.away,myTeam])
   const [stage, setStage] = useState<'draft'|'game'|'result'>('draft')
-  const [picks, setPicks] = useState<string[]>(()=>roles.map((role,i)=>roster[i]?.champions?.[0]||championPool[i]))
-  const [enemyPicks, setEnemyPicks] = useState<string[]>(()=>roles.map((role,i)=>readRoster(match.home===myTeam?match.away:match.home)[i]?.champions?.[0]||championPool[i+5]))
+  const [picks, setPicks] = useState<string[]>(()=>roles.map((_,i)=>{const champion=roster[i]?.champions?.[0];return typeof champion==='string'?champion:champion?.name||championPool[i]}))
+  const [enemyPicks, setEnemyPicks] = useState<string[]>(()=>roles.map((_,i)=>{const champion=enemySeedRoster[i]?.champions?.[0];return typeof champion==='string'?champion:champion?.name||championPool[i+5]}))
   const [minute, setMinute] = useState(0)
   const [speed, setSpeed] = useState(2)
   const [paused, setPaused] = useState(false)
