@@ -42,8 +42,8 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
   const [winner, setWinner] = useState<'blue'|'red'|null>(null)
   const [finished, setFinished] = useState(false)
 
-  const blueName = match.home
-  const redName = match.away
+  const blueName = 'T1'
+  const redName = match.home === 'T1' ? match.away : match.home
   const blueUnits: Unit[] = roster.map((p,i)=>({id:`b${i}`,name:p.name,role:roles[i],team:'blue',champion:picks[i],power:p.overall ?? 85}))
   const redUnits: Unit[] = roles.map((role,i)=>({id:`r${i}`,name:`${redName} ${role}`,role,team:'red',champion:enemyPicks[i],power:84+(i%3)*2}))
   const allUnits = [...blueUnits,...redUnits]
@@ -62,7 +62,9 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
 
   useEffect(() => {
     if (stage !== 'game' || minute === 0 || minute % 4 !== 0) return
-    const blueWins = Math.random() < 0.52
+    const teamRating = roster.reduce((sum, player) => sum + (player.overall ?? 85), 0) / Math.max(1, roster.length)
+    const blueChance = Math.max(0.25, Math.min(0.75, 0.5 + (teamRating - 85) * 0.015))
+    const blueWins = Math.random() < blueChance
     if (blueWins) {
       setBlueKills(v=>v+1); setBlueGold(v=>v+850)
       setEvents(v=>[`[${String(minute).padStart(2,'0')}:00] ${blueName} 팀이 교전에서 이득을 봤습니다.`,...v].slice(0,7))
@@ -91,7 +93,8 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
     const blueWon = winner === 'blue'
     const blueScore = blueWon ? (blueKills - redKills >= 3 ? 2 : 2) : 0
     const redScore = blueWon ? (blueScore === 2 && blueKills - redKills >= 3 ? 0 : 1) : 2
-    onFinish(blueScore,redScore)
+    if (match.home === 'T1') onFinish(blueScore,redScore)
+    else onFinish(redScore,blueScore)
   }
 
   const mapPositions = allUnits.map((unit,index)=>{
@@ -102,6 +105,8 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
     const drift = Math.sin((minute+index*3)/3)*4
     return {...unit,x:Math.max(10,Math.min(90,baseX+(unit.team==='blue'?drift:-drift))),y:laneY+Math.cos((minute+index)/4)*3}
   })
+
+  const trackedUnit = mapPositions[Math.floor((minute / 2) % mapPositions.length)]
 
   return (
     <div className="match-center">
@@ -126,7 +131,7 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
           <div className="mc-scorebar"><div><span>{blueName}</span><strong>{blueKills}</strong><small>{blueGold.toLocaleString()} G</small></div><div className="mc-clock">{String(minute).padStart(2,'0')}:00</div><div><span>{redName}</span><strong>{redKills}</strong><small>{redGold.toLocaleString()} G</small></div></div>
           <div className="mc-arena">
             <div className="mc-map-label">SUMMONER'S RIFT · LIVE SIMULATION</div>
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="mc-map">
+            <svg viewBox={trackedUnit ? `${Math.max(0, trackedUnit.x - 22)} ${Math.max(0, trackedUnit.y - 22)} 44 44` : "0 0 100 100"} preserveAspectRatio="xMidYMid slice" className="mc-map">
               <defs><linearGradient id="riftbg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#193e3c"/><stop offset="100%" stopColor="#23344a"/></linearGradient></defs>
               <rect width="100" height="100" fill="url(#riftbg)"/>
               <path d="M8 90 L90 8 M8 8 L90 90 M50 0 L50 100" stroke="#547267" strokeWidth="2" opacity=".5"/>
@@ -134,7 +139,7 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
               <circle cx="50" cy="50" r="9" fill="#b49a58" opacity=".35"/>
               {mapPositions.map(unit=><g key={unit.id} transform={`translate(${unit.x} ${unit.y})`}><circle r="3.2" fill={unit.team==='blue'?'#54a9ff':'#f07182'} stroke="#fff" strokeWidth=".6"/><text y=".9" textAnchor="middle" fontSize="2.2" fill="#07111d" fontWeight="bold">{unit.role}</text></g>)}
             </svg>
-            <div className="mc-camera"><span>PLAYER TRACKING</span><strong>{mapPositions[Math.floor((minute/2)%10)]?.name ?? '선수'}</strong><small>카메라가 주요 교전을 추적합니다</small></div>
+            <div className="mc-camera"><span>PLAYER TRACKING</span><strong>{trackedUnit?.name ?? '선수'}</strong><small>개별 선수 중심으로 화면을 확대합니다</small></div>
           </div>
           <div className="mc-controls"><button onClick={()=>setPaused(v=>!v)}>{paused?'▶ 재개':'Ⅱ 일시정지'}</button>{[1,2,4].map(v=><button key={v} className={speed===v?'active':''} onClick={()=>setSpeed(v)}>{v}x</button>)}<span>게임 시간 32분 종료 후 결과가 반영됩니다.</span></div>
           <div className="mc-lower"><section className="mc-roster-strip"><h3>선수 추적</h3>{mapPositions.map(u=><div key={u.id}><i className={u.team}/><span>{u.name}</span><small>{u.champion}</small></div>)}</section><section className="mc-events"><h3>경기 중계</h3>{events.map((e,i)=><p key={i}>{e}</p>)}</section></div>
