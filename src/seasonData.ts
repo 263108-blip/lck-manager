@@ -34,28 +34,30 @@ export type ClubData = {
 const p = (id:string,name:string,role:Role,age:number,ovr:number,pot:number,lane:number,mech:number,macro:number,teamfight:number,consistency:number,clutch:number,salary:number,value:number,contractUntil:number,team:string,champions:string[],contractStatus:PlayerData['contractStatus']='계약 유지',status:PlayerData['status']='주전'):PlayerData => ({id,name,role,age,overall:ovr,potential:pot,lane,mechanics:mech,macro,teamfight,consistency,clutch,salary,value,contractUntil,team,champions,contractStatus,status,morale:76})
 export const seasonClubs: ClubData[] = [
 {name:'T1',short:'T1',color:'#d92e46',budget:95,reputation:100,facilities:96,coach:'미정',players:[
+p('t1-rumor-zeus','Zeus','TOP',23,97,99,99,99,95,97,95,98,28,76,2027,'T1',['제이스','그웬','럼블','잭스'],'거피셜'),
 p('t1-1','Oner','JNG',24,95,96,93,97,96,96,94,96,18,52,2028,'T1',['리 신','바이','비에고','신 짜오']),
 p('t1-2','Faker','MID',31,97,98,96,94,100,99,99,100,30,75,2029,'T1',['아지르','오리아나','갈리오','아리']),
-p('t1-3','Peyz','ADC',21,94,98,96,97,93,96,93,95,16,48,2027,'T1',['카이사','징크스','바루스','제리']),
-p('t1-4','Keria','SUP',25,98,99,99,99,98,98,96,98,20,58,2027,'T1',['바드','파이크','라칸','노틸러스']),
+p('t1-3','Peyz','ADC',21,94,98,96,97,93,96,93,95,16,48,2028,'T1',['카이사','징크스','바루스','제리']),
+p('t1-4','Keria','SUP',25,98,99,99,99,98,98,96,98,20,58,2029,'T1',['바드','파이크','라칸','노틸러스']),
 ]},
 {name:'Gen.G',short:'GEN.G',color:'#c5a64b',budget:100,reputation:99,facilities:97,coach:'Ryu',players:[
+p('gen-rumor-siwoo','Siwoo','TOP',19,86,97,86,88,85,87,82,84,5,20,2027,'GEN.G',['제이스','럼블','크산테'],'거피셜'),
 p('gen-1','Chovy','MID',26,98,99,99,99,98,97,98,96,27,70,2027,'GEN.G',['요네','아리','아지르','오리아나']),
 p('gen-2','Ruler','ADC',29,97,97,98,98,97,99,99,99,25,62,2027,'GEN.G',['징크스','제리','바루스','카이사']),
 p('gen-3','Duro','SUP',23,89,94,89,89,91,90,88,88,8,20,2027,'GEN.G',['렐','라칸','노틸러스']),
 ]},
 {name:'한화생명e스포츠',short:'HLE',color:'#e65b25',budget:105,reputation:98,facilities:96,coach:'Mowgli',players:[
-p('hle-1','Kiin','TOP',27,96,97,97,96,96,97,97,97,25,64,2027,'HLE',['크산테','잭스','럼블'],'거피셜'),
-p('hle-2','Canyon','JNG',26,97,98,96,98,98,97,96,98,28,72,2027,'HLE',['니달리','리 신','비에고','세주아니'],'거피셜'),
+p('hle-rumor-kiin','Kiin','TOP',27,96,97,97,96,96,97,97,97,25,64,2027,'HLE',['크산테','잭스','럼블'],'거피셜'),
 p('hle-3','Zeka','MID',24,94,96,94,96,91,95,92,96,18,45,2027,'HLE',['아칼리','사일러스','요네','아지르']),
 p('hle-4','Gumayusi','ADC',25,97,98,98,98,95,99,97,99,22,58,2027,'HLE',['진','바루스','징크스','애쉬']),
+p('hle-5','Delight','SUP',25,94,96,94,94,95,96,94,95,15,38,2027,'HLE',['라칸','렐','노틸러스','알리스타']),
 ]},
 {name:'Dplus KIA',short:'DK',color:'#9da9c8',budget:100,reputation:94,facilities:95,coach:'cvMax',players:[
 p('dk-1','Doran','TOP',26,93,94,93,92,94,95,91,95,17,42,2027,'DK',['잭스','레넥톤','럼블','크산테'],'확정'),
 p('dk-2','Kanavi','JNG',26,96,97,95,97,97,96,95,96,23,58,2027,'DK',['리 신','비에고','세주아니','신 짜오'],'확정'),
 p('dk-3','ShowMaker','MID',27,94,95,93,96,97,96,94,97,19,48,2027,'DK',['아지르','신드라','아리','요네'],'확정'),
 p('dk-4','Smash','ADC',21,91,97,92,95,90,93,89,91,10,32,2027,'DK',['징크스','카이사','바루스','제리'],'확정'),
-p('dk-5','Delight','SUP',25,94,96,94,94,95,96,94,95,15,38,2027,'DK',['라칸','렐','노틸러스','알리스타'],'확정'),
+p('dk-5','Career','SUP',22,84,92,82,86,85,84,82,83,5,15,2027,'DK',['렐','라칸','노틸러스'],'계약 유지'),
 p('dk-6','Lucid','JNG',22,89,96,88,92,91,90,87,89,10,29,2027,'DK',['비에고','바이','리 신'],'계약 유지','후보'),
 ]},
 {name:'KT 롤스터',short:'KT',color:'#e94a50',budget:82,reputation:91,facilities:90,coach:'Score',players:[
@@ -96,7 +98,7 @@ p('dn-5','Bluffing','SUP',18,78,93,76,81,78,78,74,75,3,11,2028,'DN',['렐','노�
 export const roleOrder: Role[] = ['TOP','JNG','MID','ADC','SUP']
 export const marketPool: PlayerData[] = [
 p('fa-1','Kiin','TOP',27,96,97,97,96,96,97,97,97,25,64,2027,'HLE',['크산테','잭스','럼블'],'거피셜'),
-p('fa-2','Canyon','JNG',26,97,98,96,98,98,97,96,98,28,72,2027,'HLE',['니달리','리 신','비에고','세주아니'],'거피셜'),
+p('fa-2','Canyon','JNG',26,97,98,96,98,98,97,96,98,28,72,2026,'FA',['니달리','리 신','비에고','세주아니'],'FA'),
 p('fa-3','Zeus','TOP',23,97,99,99,99,95,97,95,98,28,76,2026,'FA',['제이스','그웬','럼블','잭스'],'FA'),
 
 p('fa-5','Clear','TOP',24,84,91,84,86,84,85,82,83,7,20,2026,'FA',['크산테','럼블'],'FA'),
