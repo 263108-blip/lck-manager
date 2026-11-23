@@ -78,7 +78,8 @@ export default function Roster({ teamName = 'T1', teamShort = 'T1' }: { teamName
   const [newName, setNewName] = useState('')
   const [newRole, setNewRole] = useState('TOP')
 const [newChampion, setNewChampion] = useState('')
-const [newMastery, setNewMastery] = useState(70)\nconst [renewYears,setRenewYears] = useState(1)
+const [newMastery, setNewMastery] = useState(70)
+const [renewYears,setRenewYears] = useState(1)
 useEffect(() => {
   try {
     saveClubRoster(teamShort, roster as PlayerData[])
