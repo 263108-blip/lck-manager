@@ -3,12 +3,12 @@ import { useEffect, useMemo, useState } from 'react'
 export type Club = { name: string; short: string; strength: number; budget: number; difficulty: string; color: string }
 export const clubs: Club[] = [
   { name: 'T1', short: 'T1', strength: 96, budget: 120, difficulty: '도전', color: '#d92e46' },
-  { name: 'Gen.G', short: 'GEN', strength: 95, budget: 115, difficulty: '도전', color: '#c5a64b' },
+  { name: 'Gen.G', short: 'GEN.G', strength: 95, budget: 115, difficulty: '도전', color: '#c5a64b' },
   { name: '한화생명e스포츠', short: 'HLE', strength: 93, budget: 105, difficulty: '상급', color: '#e65b25' },
   { name: 'Dplus KIA', short: 'DK', strength: 90, budget: 95, difficulty: '상급', color: '#9da9c8' },
   { name: 'KT 롤스터', short: 'KT', strength: 89, budget: 90, difficulty: '보통', color: '#e94a50' },
   { name: 'DRX', short: 'DRX', strength: 83, budget: 72, difficulty: '보통', color: '#4778ce' },
-  { name: 'BNK FEARX', short: 'BFX', strength: 82, budget: 70, difficulty: '보통', color: '#e4b64d' },
+  { name: 'BNK FEARX', short: 'BNK FEARX', strength: 82, budget: 70, difficulty: '보통', color: '#e4b64d' },
   { name: '농심 레드포스', short: 'NS', strength: 80, budget: 68, difficulty: '도전', color: '#d92d35' },
   { name: 'OK저축은행 브리온', short: 'BRO', strength: 77, budget: 62, difficulty: '도전', color: '#66a36d' },
   { name: '광동 프릭스', short: 'KDF', strength: 79, budget: 65, difficulty: '도전', color: '#e85a32' },
