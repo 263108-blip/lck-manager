@@ -108,6 +108,37 @@ export function advanceCareerWeek(club:Club) {
   window.dispatchEvent(new Event('lck-career-updated'))
   return next
 }
+export function releasePlayerFromClub(short:string,playerId:string) {
+  const team=seasonClubs.find(c=>c.short===short)
+  if(!team) return null
+  const roster=readClubRoster(short)
+  const player=roster.find(p=>p.id===playerId)
+  if(!player) return null
+  const career=readCareer(team)
+  const yearsLeft=Math.max(0,(player.contractUntil??2027)-2027)
+  const compensation=player.salary*yearsLeft*.35
+  saveClubRoster(short,roster.filter(p=>p.id!==playerId))
+  save(careerKey(short),{...career,budget:career.budget-compensation,releasedPlayers:[...career.releasedPlayers,playerId],history:[player.name+' 계약 해지 · 보상금 '+money(compensation),...career.history].slice(0,100)})
+  window.dispatchEvent(new Event('lck-career-updated'))
+  return {player,compensation,roster:roster.filter(p=>p.id!==playerId)}
+}
+export function renewPlayerContract(short:string,playerId:string,years:number) {
+  const team=seasonClubs.find(c=>c.short===short)
+  if(!team) return false
+  const roster=readClubRoster(short)
+  const player=roster.find(p=>p.id===playerId)
+  if(!player) return false
+  const career=readCareer(team)
+  const raise=Math.round(player.salary*(1+years*.05)*10)/10
+  const bonus=raise*.12*years
+  if(career.budget<bonus) return false
+  const updated=roster.map(p=>p.id===playerId?{...p,salary:raise,contractUntil:Math.max(2027,p.contractUntil??2027)+years,contractStatus:'확정' as const}:p)
+  saveClubRoster(short,updated)
+  save(careerKey(short),{...career,budget:career.budget-bonus,history:[player.name+' 재계약 · '+years+'년 연장 · 연봉 '+money(raise),...career.history].slice(0,100)})
+  window.dispatchEvent(new Event('lck-career-updated'))
+  return true
+}
+
 export function ClubSelection({onSelect}:{onSelect:(club:Club)=>void}) {
   const [chosen,setChosen]=useState('T1')
   const [showInfo,setShowInfo]=useState(false)
@@ -188,6 +219,11 @@ export function ClubOffice({club,page,onChangePage}:{club:Club;page:string;onCha
       const seller=selectedPlayer.team
       const sellerRoster=readClubRoster(seller).filter(p=>p.id!==selectedPlayer.id)
       saveClubRoster(seller,sellerRoster)
+      const sellerTeam=seasonClubs.find(t=>t.short===seller)
+      if(sellerTeam){
+        const sellerCareer=readCareer(sellerTeam)
+        save(careerKey(seller),{...sellerCareer,budget:sellerCareer.budget+signingCost,history:[selectedPlayer.name+' 이적료 수입 '+money(signingCost),...sellerCareer.history].slice(0,100)})
+      }
     }
     const nextBudget=career.budget-signingCost-signingBonus
     setCareer(old=>({...old,budget:nextBudget,transferSpent:old.transferSpent+signingCost, signedPlayers:[...old.signedPlayers,selectedPlayer.id],history:[selectedPlayer.name+' 영입 완료 · 이적료 '+money(signingCost)+' · 연봉 '+money(salary),...old.history].slice(0,100)}))
