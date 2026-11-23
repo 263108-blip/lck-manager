@@ -5,6 +5,8 @@ import Schedule from './Schedule'
 import LeagueTable from './LeagueTable'
 import { useLeagueMatches, buildStandings } from './matchData'
 import Tactics from './Tactics'
+import MatchCenter from './MatchCenter'
+import { saveMatches, type Match } from './matchData'
 
 const menus = [
   '대시보드',
@@ -19,6 +21,7 @@ const menus = [
 
 function App() {
   const [active, setActive] = useState('대시보드')
+  const [activeMatch, setActiveMatch] = useState<Match | null>(null)
   const [roster, setRoster] = useState<any[]>(() => {
     try {
       const saved = localStorage.getItem('lck-manager-roster')
@@ -131,12 +134,26 @@ function App() {
         </header>
 
         <section className="content">
-          {active === '선수단' ? (
+          {activeMatch ? (
+            <MatchCenter
+              match={activeMatch}
+              onExit={() => setActiveMatch(null)}
+              onFinish={(homeScore, awayScore) => {
+                const updated = matches.map(match => match.id === activeMatch.id
+                  ? { ...match, status: '종료' as const, homeScore, awayScore }
+                  : match
+                )
+                saveMatches(updated)
+                setActiveMatch(null)
+                setActive('경기 일정')
+              }}
+            />
+          ) : active === '선수단' ? (
             <Roster />
           ) : active === '전술 및 밴픽' ? (
             <Tactics />
           ) : active === '경기 일정' ? (
-            <Schedule />
+            <Schedule onStartMatch={match => setActiveMatch(match)} />
           ) : active === '리그 순위' ? (
             <LeagueTable standings={standings} />
           ) : active === '대시보드' ? (
