@@ -95,7 +95,7 @@ function App() {
       <header className="topbar"><div><span className="season">2027 PRESEASON</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button onClick={advanceDay}>1주 진행 →</button></div></header>
       <section className="content">
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
-        : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short}/>
+        : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short} onOpenMarket={()=>setActive('이적시장')}/>
        
         : active==='경기 일정' ? <Schedule teamName={club.short} onStartMatch={m=>setActiveMatch(m)}/>
         : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
