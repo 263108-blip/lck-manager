@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 
 export type Club = { name: string; short: string; strength: number; budget: number; difficulty: string; color: string }
 export const clubs: Club[] = [
@@ -21,7 +21,7 @@ export function ClubSelection({ onSelect }: { onSelect: (club: Club) => void }) 
   return <div className="club-setup">
     <div className="club-setup-top"><span>NEW CAREER · 2026</span><h1>당신의 LCK는 지금부터 시작됩니다.</h1><p>운영할 구단을 선택하고 감독으로서 첫 시즌을 시작하세요.</p></div>
     <div className="club-setup-heading"><div><small>SELECT YOUR CLUB</small><h2>어느 팀을 지휘하시겠습니까?</h2></div><span>10 CLUBS · LCK</span></div>
-    <div className="club-choice-grid">{clubs.map(club => <button key={club.short} className={chosen === club.short ? 'club-choice selected' : 'club-choice'} onClick={() => setChosen(club.short)} style={{'--club-color':club.color} as React.CSSProperties}>
+    <div className="club-choice-grid">{clubs.map(club => <button key={club.short} className={chosen === club.short ? 'club-choice selected' : 'club-choice'} onClick={() => setChosen(club.short)} style={{'--club-color':club.color} as CSSProperties}>
       <span className="club-choice-mark">{club.short}</span><span className="club-choice-info"><strong>{club.name}</strong><small>팀 전력 {club.strength} · 운영 예산 ₩{club.budget}억</small></span><span className="club-difficulty">{club.difficulty}</span>
     </button>)}</div>
     <div className="club-setup-footer"><p>선택한 팀의 예산과 전력에 따라 시즌 운영 난이도가 달라집니다.</p><button onClick={() => onSelect(clubs.find(c => c.short === chosen)!)}>이 구단으로 커리어 시작 <span>→</span></button></div>
