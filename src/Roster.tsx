@@ -114,7 +114,6 @@ const substitutes = roster
     if (!result) return
     setRoster(result.roster as Player[])
     setSelectedName(result.roster[0]?.name || '')
-    setEditing(false)
     alert(`방출 완료 · 계약 보상금 ₩${result.compensation.toFixed(1)}억`)
   }
 
@@ -257,7 +256,7 @@ const selected =
     <div className="roster-page">
       <div className="roster-title">
         <div>
-          <h1>선수단 관리</h1>
+          <h1>{teamName} 선수단 관리</h1>
           <p>선수 영입부터 능력치와 팀 전력까지 관리하세요.</p>
         </div>
         <button onClick={onOpenMarket}>이적시장으로 이동 →</button>
