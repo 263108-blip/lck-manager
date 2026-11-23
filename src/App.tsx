@@ -40,7 +40,7 @@ function App() {
     return () => { window.removeEventListener('lck-roster-updated',refresh); window.removeEventListener('storage',refresh) }
   },[club,active])
   const starters = useMemo(() => roster.filter(p=>p.status==='주전'),[roster])
-  const teamPower = starters.length ? Math.round(starters.reduce((sum,p)=>sum+(p.overall||70),0)/starters.length) : club?.strength || 0
+  const teamPower = club ? Math.round((starters.reduce((sum,p)=>sum+(p.overall||70),0)+(5-starters.length)*58)/5) : 0
   const myStanding = standings.find(t=>t.name===club?.short)
   const myRank = standings.findIndex(t=>t.name===club?.short)+1
   const nextMatch = matches.filter(m=>m.status==='예정'&&(m.home===club?.short||m.away===club?.short)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0]
@@ -78,8 +78,8 @@ function App() {
         : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive}/>
         : <div className="fm-dashboard">
-          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 지휘하세요.</p></div><div className="fm-season"><span>2027 PRESEASON</span><strong>SPRING</strong><small>시즌 {day+1}일차</small></div></div>
-          <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
+          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 준비하세요.</p></div><div className="fm-season"><span>2027 PRESEASON</span><strong>PRESEASON</strong><small>시즌 {day+1}일차</small></div></div>
+          <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK · 2027 시즌 프리시즌</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
           <div className="fm-stats">
             <div className="fm-stat-card"><span>선수단</span><strong>{roster.length}<small>명</small></strong><p>등록 선수</p></div>
             <div className="fm-stat-card"><span>리그 순위</span><strong>{myRank||'-'}<small>위</small></strong><p>현재 리그 순위</p></div>
