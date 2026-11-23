@@ -6,7 +6,7 @@ import LeagueTable from './LeagueTable'
 import { useLeagueMatches, buildStandings, saveMatches, type Match } from './matchData'
 import Tactics from './Tactics'
 import MatchCenter from './MatchCenter'
-import { ClubOffice, ClubSelection, clubs, type Club } from './ClubManager'
+import { applyMatchResult, ClubOffice, ClubSelection, clubs, type Club } from './ClubManager'
 
 const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','재정 및 스폰서','구단 기록']
 const roleOrder = ['TOP','JNG','MID','ADC','SUP']
@@ -91,7 +91,7 @@ function App() {
     <main className="main">
       <header className="topbar"><div><span className="season">2026 SEASON</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button onClick={advanceDay}>하루 진행 →</button></div></header>
       <section className="content">
-        {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);setActiveMatch(null);setActive('경기 일정')}}/>
+        {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
         : active==='선수단' ? <Roster teamName={club.name}/>
         : active==='전술 및 밴픽' ? <Tactics teamName={club.name}/>
         : active==='경기 일정' ? <Schedule teamName={club.short} onStartMatch={m=>setActiveMatch(m)}/>
