@@ -5,7 +5,6 @@ import Schedule from './Schedule'
 import LeagueTable from './LeagueTable'
 import { useLeagueMatches, buildStandings } from './matchData'
 import Tactics from './Tactics'
-import { type Match } from './matchData'
 
 const menus = [
   '대시보드',
