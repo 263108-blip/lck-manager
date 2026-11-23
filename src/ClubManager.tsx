@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
-import { marketPool, seasonClubs, staffPool, type ClubData, type PlayerData, type Role, roleOrder } from './seasonData'
+import { marketPool, seasonClubs, staffPool, type ClubData, type PlayerData, roleOrder } from './seasonData'
 
 export type Club = { name: string; short: string; strength: number; budget: number; difficulty: string; color: string }
 export const clubs: Club[] = seasonClubs.map(team => ({
