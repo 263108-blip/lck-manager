@@ -305,7 +305,6 @@ const selected =
               className={`player-card ${selected?.name === p.name ? 'selected' : ''}`}
               onClick={() => {
                 setSelectedName(p.name)
-                setEditing(false)
               }}
             >
               <span className="player-role">{p.role}</span>
