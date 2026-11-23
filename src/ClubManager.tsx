@@ -82,11 +82,30 @@ export function advanceCareerWeek(club:Club) {
     return next
   })
   saveClubRoster(club.short,trained)
+  // AI 구단도 프리시즌 이적시장에서 매주 한 건씩 영입을 진행합니다.
+  const aiTeams=seasonClubs.filter(team=>team.short!==club.short)
+  for(let offset=0;offset<aiTeams.length;offset++){
+    const aiTeam=aiTeams[(career.week-1+offset)%aiTeams.length]
+    const aiRoster=readClubRoster(aiTeam.short)
+    const vacant=roleOrder.find(role=>!aiRoster.some(player=>player.role===role&&player.status==='주전'))
+    if(!vacant) continue
+    const occupied=new Set(seasonClubs.flatMap(team=>readClubRoster(team.short)).map(player=>player.id))
+    const aiCareer=readCareer(aiTeam)
+    const candidate=marketPool.filter(player=>player.team==='FA'&&player.role===vacant&&!occupied.has(player.id))
+      .sort((a,b)=>b.overall-a.overall).find(player=>aiCareer.budget>=player.value+player.salary*.12)
+    if(!candidate) continue
+    const signing={...candidate,team:aiTeam.short,contractUntil:2028,contractStatus:'확정' as const,status:'주전' as const}
+    saveClubRoster(aiTeam.short,[...aiRoster,signing])
+    const fee=candidate.value
+    save(careerKey(aiTeam.short),{...aiCareer,budget:aiCareer.budget-fee-candidate.salary*.12,transferSpent:aiCareer.transferSpent+fee,signedPlayers:[...aiCareer.signedPlayers,candidate.id],history:[candidate.name+' 영입 완료 · 이적료 '+money(fee),...aiCareer.history].slice(0,100)})
+    break
+  }
   const nextBudget=career.budget-weeklyPayroll+career.sponsorIncome
   const next={...career,week:career.week+1,budget:nextBudget,wageSpent:career.wageSpent+weeklyPayroll,
     morale:Math.min(100,career.morale+(career.training==='균형 훈련'?2:1)),
     history:[career.week+'주차 종료 · '+career.training+' · 급여 '+money(weeklyPayroll)+' 지급 · 스폰서 '+money(career.sponsorIncome)+' 수입',...career.history].slice(0,100)}
   save(careerKey(club.short),next)
+  window.dispatchEvent(new Event('lck-career-updated'))
   return next
 }
 export function ClubSelection({onSelect}:{onSelect:(club:Club)=>void}) {
