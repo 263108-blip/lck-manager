@@ -5,7 +5,7 @@ type Props = {
   standings: Standing[]
 }
 
-function LeagueTable({ standings }: Props) {
+function LeagueTable({ standings, myTeam = 'T1' }: Props) {
   return (
     <div className="league-page">
       <div className="league-header">
@@ -60,11 +60,11 @@ function LeagueTable({ standings }: Props) {
             </thead>
             <tbody>
               {standings.map((team, index) => (
-                <tr key={team.name} className={team.name === 'T1' ? 'my-team' : ''}>
+                <tr key={team.name} className={team.name === myTeam ? 'my-team' : ''}>
                   <td><strong className="league-rank">{index + 1}</strong></td>
                   <td>
                     <strong className="league-team-name">{team.name}</strong>
-                    {team.name === 'T1' && <span className="league-my-team">MY CLUB</span>}
+                    {team.name === myTeam && <span className="league-my-team">MY CLUB</span>}
                   </td>
                   <td>{team.played}</td>
                   <td className="league-wins">{team.wins}</td>
