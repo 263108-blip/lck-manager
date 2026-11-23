@@ -3,7 +3,7 @@ import Roster from './Roster'
 import './App.css'
 import Schedule from './Schedule'
 import LeagueTable from './LeagueTable'
-import { useLeagueMatches, buildStandings, saveMatches, initialMatches, type Match } from './matchData'
+import { useLeagueMatches, buildStandings, saveMatches, type Match } from './matchData'
 import MatchCenter from './MatchCenter'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, seedRosterForClub, type Club } from './ClubManager'
 
