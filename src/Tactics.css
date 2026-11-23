@@ -1,0 +1,279 @@
+
+.tactics-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  color: #e8edf5;
+}
+
+.tactics-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.tactics-heading span,
+.tactics-small-title,
+.tactics-panel-title > div > span {
+  color: #63d6b5;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+}
+
+.tactics-heading h1 {
+  margin: 7px 0;
+  font-size: 28px;
+}
+
+.tactics-heading p,
+.tactics-panel p {
+  color: #91a0b5;
+  font-size: 13px;
+}
+
+.tactics-reset {
+  padding: 11px 16px;
+  border: 1px solid #34445b;
+  border-radius: 8px;
+  background: #19263a;
+  color: #dce5f2;
+  cursor: pointer;
+}
+
+.tactics-overview {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.tactics-overview > div {
+  padding: 18px;
+  border: 1px solid #29394f;
+  border-radius: 12px;
+  background: #172438;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.tactics-overview span {
+  color: #91a0b5;
+  font-size: 12px;
+}
+
+.tactics-overview strong {
+  font-size: 25px;
+  color: #63d6b5;
+}
+
+.tactics-panel {
+  padding: 22px;
+  border: 1px solid #29394f;
+  border-radius: 13px;
+  background: #172438;
+  min-width: 0;
+}
+
+.tactics-panel-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.tactics-panel-title h2,
+.tactics-panel h2 {
+  margin: 6px 0 0;
+  font-size: 19px;
+}
+
+.tactics-status {
+  padding: 7px 10px;
+  border-radius: 6px;
+  background: #233c43;
+  color: #63d6b5;
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.draft-columns {
+  display: grid;
+  grid-template-columns: 1fr 55px 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+.draft-team h3,
+.ban-team h3 {
+  margin: 0 0 15px;
+  font-size: 15px;
+}
+
+.team-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 9px;
+  border-radius: 50%;
+}
+
+.our-dot {
+  background: #63d6b5;
+}
+
+.enemy-dot {
+  background: #e77a88;
+}
+
+.draft-vs {
+  color: #8494aa;
+  font-size: 18px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.draft-slot {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.draft-slot > span {
+  color: #63d6b5;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.draft-slot select,
+.ban-team select,
+.strategy-select {
+  width: 100%;
+  min-width: 0;
+  padding: 11px;
+  border: 1px solid #34465e;
+  border-radius: 7px;
+  background: #101c2d;
+  color: #e8edf5;
+  outline: none;
+}
+
+.draft-slot select:focus,
+.ban-team select:focus,
+.strategy-select:focus {
+  border-color: #63d6b5;
+}
+
+.ban-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.ban-team {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.ban-team h3 {
+  grid-column: 1 / -1;
+}
+
+.tactics-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.tactics-bottom-grid .tactics-panel > p {
+  margin: 10px 0 18px;
+}
+
+.strategy-select {
+  margin-top: 12px;
+}
+
+.composition-stat {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid #2a3b51;
+  font-size: 13px;
+}
+
+.composition-stat span {
+  color: #aab7c8;
+}
+
+.composition-stat strong {
+  color: #e8edf5;
+}
+
+.composition-score {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+  padding: 15px;
+  border-radius: 8px;
+  background: #20394a;
+}
+
+.composition-score span {
+  color: #a9c7c3;
+  font-size: 13px;
+}
+
+.composition-score strong {
+  color: #63d6b5;
+  font-size: 25px;
+}
+
+.composition-score small {
+  color: #91a0b5;
+  font-size: 12px;
+}
+
+.tactics-disclaimer {
+  margin-bottom: 0;
+  font-size: 11px !important;
+}
+
+@media (max-width: 900px) {
+  .tactics-overview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tactics-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .tactics-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .draft-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .draft-vs {
+    padding: 4px;
+  }
+
+  .ban-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .tactics-panel {
+    padding: 16px;
+  }
+}
