@@ -1,5 +1,7 @@
 
 import { useEffect, useState } from 'react'
+import { readClubRoster, saveClubRoster } from './ClubManager'
+import type { PlayerData } from './seasonData'
 type ChampionMastery = {
   name: string
   mastery: number
@@ -16,6 +18,13 @@ type Player = {
   mechanics: number
   champions: (string | ChampionMastery)[]
   status: string
+  potential?: number
+  consistency?: number
+  clutch?: number
+  salary?: number
+  value?: number
+  contractUntil?: number
+  contractStatus?: string
 }
 
 const initialPlayers: Player[] = [
@@ -32,14 +41,12 @@ const roles = ['전체', 'TOP', 'JNG', 'MID', 'ADC', 'SUP']
 const STORAGE_KEY = 'lck-manager-roster'
 
 function calculateOverall(player: Player) {
-  return Math.round(
-    (player.lane + player.teamfight + player.macro + player.mechanics) / 4
-  )
+  return Math.round(player.lane*.22 + player.mechanics*.22 + player.macro*.20 + player.teamfight*.20 + (player.consistency ?? 80)*.10 + (player.clutch ?? 80)*.06)
 }
 
-function loadRoster(): Player[] {
+function loadRoster(teamShort: string): Player[] {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY)
+    const saved = localStorage.getItem(STORAGE_KEY + '-' + teamShort)
 
     if (saved) {
       const parsed = JSON.parse(saved)
@@ -59,11 +66,11 @@ function loadRoster(): Player[] {
     console.warn('저장된 선수단 데이터를 불러오지 못했습니다.')
   }
 
-  return initialPlayers
+  return (readClubRoster(teamShort) as Player[]) || initialPlayers
 }
 
-export default function Roster({ teamName = 'T1' }: { teamName?: string }) {
-  const [roster, setRoster] = useState<Player[]>(loadRoster)
+export default function Roster({ teamName = 'T1', teamShort = 'T1' }: { teamName?: string; teamShort?: string }) {
+  const [roster, setRoster] = useState<Player[]>(() => loadRoster(teamShort))
   const [role, setRole] = useState('전체')
   const [selectedName, setSelectedName] = useState('Zeus')
   const [recruiting, setRecruiting] = useState(false)
@@ -74,12 +81,11 @@ const [newChampion, setNewChampion] = useState('')
 const [newMastery, setNewMastery] = useState(70)
 useEffect(() => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(roster))
-    window.dispatchEvent(new Event('lck-roster-updated'))
+    saveClubRoster(teamShort, roster as PlayerData[])
   } catch {
     console.warn('선수단 데이터를 저장하지 못했습니다.')
   }
-}, [roster])
+}, [roster, teamShort])
 
 
 const roleOrder = ['TOP', 'JNG', 'MID', 'ADC', 'SUP']
@@ -100,12 +106,7 @@ const substitutes = roster
     p => role === '전체' || p.role === role
   )
 
-  const teamPower = starters.length
-    ? Math.round(
-        starters.reduce((sum, p) => sum + calculateOverall(p), 0) /
-        starters.length
-      )
-    : 0
+  const teamPower = Math.round(starters.reduce((sum, p) => sum + calculateOverall(p), 0) / 5 + (5-starters.length)*11)
 
   function updateSelected(key: keyof Player, value: string | number) {
     if (!selected) return
@@ -145,6 +146,7 @@ const substitutes = roster
       mechanics: 70,
       champions: ['미등록'],
       status: '후보',
+      potential: 85, consistency: 70, clutch: 70, salary: 1, value: 2, contractUntil: 2027, contractStatus: '확정',
     }
 
     setRoster(prev => [...prev, player])
@@ -407,7 +409,8 @@ const selected =
                 />
               </div>
             ) : (
-              <p>{selected.team} / {selected.role} / {selected.age}세</p>
+              <p>{selected.team} / {selected.role} / {selected.age}세 · 계약 {selected.contractUntil ?? '미정'}년까지</p>
+              <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span></div>
             )}
 
             <h3>선수 능력치</h3>
@@ -417,6 +420,8 @@ const selected =
               ['teamfight', '한타'],
               ['macro', '운영'],
               ['mechanics', '피지컬'],
+              ['consistency', '일관성'],
+              ['clutch', '중요 경기'],
             ] as const).map(([key, label]) => (
               <div className="stat-row" key={key}>
                 <span>{label}</span>
@@ -425,7 +430,7 @@ const selected =
                     type="number"
                     min="1"
                     max="100"
-                    value={selected[key]}
+                    value={selected[key] ?? 75}
                     onChange={e =>
                       updateSelected(
                         key,
@@ -437,7 +442,7 @@ const selected =
                   <strong>{selected[key]}</strong>
                 )}
                 <div className="stat-bar">
-                  <div style={{ width: `${selected[key]}%` }} />
+                  <div style={{ width: `${selected[key] ?? 75}%` }} />
                 </div>
               </div>
             ))}
