@@ -30,7 +30,7 @@ export type ClubData = {
   coach: string
   players: PlayerData[]
 }
-const p = (id:string,name:string,role:Role,age:number,ovr:number,pot:number,lane:number,mech:number,macro:number,teamfight:number,consistency:number,clutch:number,salary:number,value:number,contractUntil:number,team:string,champions:string[],contractStatus:PlayerData['contractStatus']='계약 유지',status:PlayerData['status']='주전'):PlayerData => ({id,name,role,age,overall:ovr,potential:pot,lane,mechanics:mech,macro,teamfight,consistency,clutch,salary,value,contractUntil,team,champions,contractStatus,status})
+const p = (id:string,name:string,role:Role,age:number,ovr:number,pot:number,lane:number,mech:number,macro:number,teamfight:number,consistency:number,clutch:number,salary:number,value:number,contractUntil:number,team:string,champions:string[],contractStatus:PlayerData['contractStatus']='계약 유지',status:PlayerData['status']='주전'):PlayerData => ({id,name,role,age,overall:ovr,potential:pot,lane,mechanics:mech,macro,teamfight,consistency,clutch,salary,value,contractUntil,team,champions,contractStatus,status,morale:76})
 export const seasonClubs: ClubData[] = [
 {name:'T1',short:'T1',color:'#d92e46',budget:95,reputation:100,facilities:96,coach:'미정',players:[
 p('t1-1','Oner','JNG',24,95,96,93,97,96,96,94,96,18,52,2028,'T1',['리 신','바이','비에고','신 짜오']),
@@ -120,4 +120,17 @@ export const staffPool = [
 {id:'staff-8',name:'Tom',role:'전략 코치',rating:89,salary:5,focus:'밴픽·라인전'},
 {id:'staff-9',name:'Mata',role:'서포트 코치',rating:90,salary:5,focus:'시야·서포팅'},
 {id:'staff-10',name:'Duke',role:'분석 코치',rating:83,salary:3,focus:'상대 분석'},
+]
+
+export const academyPool: PlayerData[] = [
+p('academy-01','이도윤','TOP',17,72,94,72,73,70,71,68,69,.5,1,2028,'FA',['크산테','잭스'],'FA','후보'),
+p('academy-02','김태성','TOP',18,75,92,76,76,74,75,72,73,.6,1.5,2028,'FA',['럼블','레넥톤'],'FA','후보'),
+p('academy-03','박준서','JNG',17,71,95,69,74,73,72,67,70,.5,1,2028,'FA',['비에고','바이'],'FA','후보'),
+p('academy-04','최민혁','JNG',19,76,91,75,78,77,76,74,75,.8,2,2028,'FA',['리 신','신 짜오'],'FA','후보'),
+p('academy-05','정현우','MID',18,74,96,73,77,75,74,70,72,.7,1.8,2028,'FA',['아리','요네'],'FA','후보'),
+p('academy-06','윤시우','MID',17,69,97,68,72,70,69,65,68,.5,1,2028,'FA',['아지르','오리아나'],'FA','후보'),
+p('academy-07','한지훈','ADC',18,75,94,76,78,72,76,72,74,.7,1.8,2028,'FA',['징크스','카이사'],'FA','후보'),
+p('academy-08','서준혁','ADC',19,77,91,78,80,76,78,75,76,.9,2.2,2028,'FA',['제리','바루스'],'FA','후보'),
+p('academy-09','오민재','SUP',18,70,95,70,73,74,72,68,69,.5,1,2028,'FA',['렐','라칸'],'FA','후보'),
+p('academy-10','강우진','SUP',19,76,92,77,77,79,78,75,76,.8,2,2028,'FA',['노틸러스','알리스타'],'FA','후보'),
 ]
