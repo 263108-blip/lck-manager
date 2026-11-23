@@ -49,7 +49,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const allUnits = [...blueUnits,...redUnits]
   const blueRating=blueUnits.reduce((sum,p)=>sum+p.power,0)/5
   const redRating=redUnits.reduce((sum,p)=>sum+p.power,0)/5
-  const draftFit=(players:Player[],selected:string[])=>players.reduce((sum,p,i)=>sum+((p.champions??[]).includes(selected[i])?3:0),0)/5
+  const draftFit=(players:Player[],selected:string[])=>players.reduce((sum,p,i)=>sum+((p.champions??[]).some(champion=>(typeof champion==='string'?champion:champion.name)===selected[i])?3:0),0)/5
   const draftEdge=draftFit(roster,picks)-draftFit(enemyRoster,enemyPicks)
 
   useEffect(() => {
@@ -150,7 +150,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
         </div>
       ) : stage==='game' ? (
         <div className="mc-game">
-          <div className="mc-scorebar"><div><span>{blueName}</span><strong>{blueKills}</strong><small>{blueGold.toLocaleString()} G</small></div><div className="mc-clock">{String(minute).padStart(2,'0')}:00</div><div><span>{redName}</span><strong>{redKills}</strong><small>{redGold.toLocaleString()} G</small></div></div>
+          <div className="mc-series-score">BO3 · GAME {gameNumber} · SERIES {blueSeriesWins}:{redSeriesWins}</div><div className="mc-scorebar"><div><span>{blueName}</span><strong>{blueKills}</strong><small>{blueGold.toLocaleString()} G</small></div><div className="mc-clock">{String(minute).padStart(2,'0')}:00</div><div><span>{redName}</span><strong>{redKills}</strong><small>{redGold.toLocaleString()} G</small></div></div>
           <div className="mc-arena">
             <div className="mc-map-label">SUMMONER'S RIFT · LIVE SIMULATION</div>
             <svg viewBox={trackedUnit ? `${Math.max(0, trackedUnit.x - 22)} ${Math.max(0, trackedUnit.y - 22)} 44 44` : "0 0 100 100"} preserveAspectRatio="xMidYMid slice" className="mc-map">
