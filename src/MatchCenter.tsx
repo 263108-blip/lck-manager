@@ -42,7 +42,6 @@ function MatchCenter({ match, onFinish, onExit }: Props) {
   const [winner, setWinner] = useState<'blue'|'red'|null>(null)
   const [finished, setFinished] = useState(false)
 
-  const controlledTeam = match.home === 'T1' ? 'blue' : match.away === 'T1' ? 'red' : 'blue'
   const blueName = match.home
   const redName = match.away
   const blueUnits: Unit[] = roster.map((p,i)=>({id:`b${i}`,name:p.name,role:roles[i],team:'blue',champion:picks[i],power:p.overall ?? 85}))
