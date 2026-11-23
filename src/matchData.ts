@@ -39,7 +39,7 @@ function buildSeasonFixtures():Match[] {
       const date=new Date(start)
       date.setDate(start.getDate()+round*7+Math.floor(index/3))
       fixtures.push({
-        id:id++,date:date.toISOString().slice(0,10),
+        id:id++,date:[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-'),
         time:['14:00','17:00','19:00'][index%3],
         home:reverse?game.away:game.home,
         away:reverse?game.home:game.away,
