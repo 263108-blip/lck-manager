@@ -7,6 +7,7 @@ type ChampionMastery = {
   mastery: number
 }
 type Player = {
+  id?: string
   name: string
   role: string
   team: string
