@@ -4,7 +4,7 @@ import { seasonClubs } from './seasonData'
 import './MatchCenter.css'
 
 type Role = 'TOP' | 'JNG' | 'MID' | 'ADC' | 'SUP'
-type Player = { name: string; role: Role; overall?: number; champions?: (string | { name: string; mastery?: number })[] }
+type Player = { name: string; role: Role; overall?: number; morale?: number; champions?: (string | { name: string; mastery?: number })[] }
 type Props = { match: Match; myTeam?: string; onFinish: (homeScore: number, awayScore: number) => void; onExit: () => void }
 type Unit = { id: string; name: string; role: Role; team: 'blue' | 'red'; champion: string; power: number }
 
@@ -40,8 +40,8 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const blueName = myTeam
   const redName = match.home === myTeam ? match.away : match.home
   const enemyRoster = useMemo(()=>readRoster(redName),[redName])
-  const blueUnits: Unit[] = roles.map((role,i)=>({id:`b${i}`,name:roster[i]?.name??'공석',role,team:'blue',champion:picks[i],power:roster[i]?.overall??55}))
-  const redUnits: Unit[] = roles.map((role,i)=>({id:`r${i}`,name:enemyRoster[i]?.name??'공석',role,team:'red',champion:enemyPicks[i],power:enemyRoster[i]?.overall??55}))
+  const blueUnits: Unit[] = roles.map((role,i)=>({id:`b${i}`,name:roster[i]?.name??'공석',role,team:'blue',champion:picks[i],power:(roster[i]?.overall??55)+((roster[i]?.morale??76)-76)*.12}))
+  const redUnits: Unit[] = roles.map((role,i)=>({id:`r${i}`,name:enemyRoster[i]?.name??'공석',role,team:'red',champion:enemyPicks[i],power:(enemyRoster[i]?.overall??55)+((enemyRoster[i]?.morale??76)-76)*.12}))
   const allUnits = [...blueUnits,...redUnits]
   const blueRating=blueUnits.reduce((sum,p)=>sum+p.power,0)/5
   const redRating=redUnits.reduce((sum,p)=>sum+p.power,0)/5
