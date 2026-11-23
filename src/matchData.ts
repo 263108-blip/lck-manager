@@ -46,7 +46,10 @@ export const teams = [
 export function loadMatches(): Match[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
-    return saved ? JSON.parse(saved) as Match[] : initialMatches
+    if (!saved) return initialMatches
+    const parsed = JSON.parse(saved) as Match[]
+    const knownIds = new Set(parsed.map(match => match.id))
+    return [...parsed, ...initialMatches.filter(match => !knownIds.has(match.id))]
   } catch {
     return initialMatches
   }
