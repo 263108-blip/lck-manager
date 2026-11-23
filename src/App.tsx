@@ -22,9 +22,9 @@ function App() {
   const standings = buildStandings(matches)
   useEffect(() => {
     if (!club) return
-    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v1') {
+    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v2') {
       clubs.forEach(team => localStorage.setItem('lck-manager-roster-' + team.short, JSON.stringify(seedRosterForClub(team))))
-      localStorage.setItem('lck-manager-roster-version', '2027-v1')
+      localStorage.setItem('lck-manager-roster-version', '2027-v2')
     }
     const key = 'lck-manager-roster-' + club.short
     if (!localStorage.getItem(key)) {
@@ -55,7 +55,7 @@ function App() {
     localStorage.setItem('lck-manager-roster-' + selected.short, JSON.stringify(nextRoster))
     localStorage.setItem('lck-manager-roster', JSON.stringify(nextRoster))
     localStorage.setItem('lck-manager-selected-club', JSON.stringify(selected))
-    localStorage.setItem('lck-manager-roster-version', '2027-v1')
+    localStorage.setItem('lck-manager-roster-version', '2027-v2')
     setClub(selected)
     setActive('대시보드')
     window.dispatchEvent(new Event('lck-roster-updated'))
