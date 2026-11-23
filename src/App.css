@@ -247,3 +247,35 @@ button{transition:background .16s ease,border-color .16s ease,transform .16s eas
 @media(max-width:1050px){.career-start-layout{grid-template-columns:1fr}.career-club-preview{display:grid;grid-template-columns:1fr 1fr;column-gap:20px}.career-preview-top,.career-club-preview h2,.career-club-preview>p,.career-preview-metrics,.career-start-button,.career-data-note,.career-data-disclaimer{grid-column:1/-1}.career-preview-roster{grid-column:1/-1}}
 @media(max-width:760px){.career-start{padding:18px 12px}.career-start-hero{padding:25px 20px}.career-club-picker,.career-club-preview{padding:15px}.career-club-grid{grid-template-columns:1fr}.career-club-preview{display:block}.pro-office-head{align-items:flex-start;flex-direction:column;padding:18px}.pro-cash{width:100%;text-align:left}.pro-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.pro-market-head{display:none}.pro-market-row{grid-template-columns:42px minmax(100px,1fr) 55px 80px;gap:7px;padding:12px 4px}.pro-market-row button{grid-column:2/-1}.pro-scout-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pro-training-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pro-finance-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pro-training-footer{align-items:flex-start;flex-direction:column}.pro-report-stats{grid-template-columns:repeat(2,1fr)}.pro-staff-row{gap:8px;flex-wrap:wrap}.pro-staff-row>div{min-width:130px}.sidebar{width:205px;flex-basis:205px}.content{padding:20px 14px}.topbar{padding:0 14px}}
 @media(max-width:480px){.career-start-meta{flex-wrap:wrap}.pro-filter{width:100%}.pro-panel-head{align-items:flex-start;flex-direction:column}.pro-filter select{flex:1;min-width:0}.pro-scout-grid{grid-template-columns:1fr}.pro-offer-fields{grid-template-columns:1fr}.pro-sponsor-form{flex-direction:column}}
+
+
+.contract-renew-control{display:flex;gap:5px;align-items:center}
+.contract-renew-control select{max-width:62px;padding:8px;border:1px solid #35465b;border-radius:6px;background:#172536;color:#eaf0f7}
+.contract-renew-control button{padding:8px 10px;border:1px solid #3b675f;border-radius:6px;background:#1b3a35;color:#8de4c9;font-size:10px}
+.pro-interview-select{display:flex;align-items:end;gap:15px;flex-wrap:wrap;padding:14px;border:1px solid #2b3e52;border-radius:8px;background:#172536}
+.pro-interview-select label{display:flex;flex-direction:column;gap:7px;min-width:220px;color:#9eafc1;font-size:10px}
+.pro-interview-select select{padding:10px;border:1px solid #364a60;border-radius:7px;background:#0f1a27;color:#f0f4f8}
+.pro-interview-morale{display:flex;align-items:center;gap:12px;margin-left:auto;color:#91a4b8;font-size:10px}
+.pro-interview-morale b{color:#73dfbd;font-size:18px}
+.pro-interview-actions,.pro-media-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:14px}
+.pro-interview-actions button,.pro-media-options button{display:flex;flex-direction:column;gap:7px;padding:15px;border:1px solid #2e4157;border-radius:8px;background:#182638;color:#edf3f9;text-align:left}
+.pro-interview-actions button:hover,.pro-media-options button:hover{border-color:#5a8d7e;background:#1b303d}
+.pro-interview-actions strong,.pro-media-options strong{font-size:11px}
+.pro-interview-actions small,.pro-media-options small{color:#8fa1b6;font-size:9px;line-height:1.6}
+.pro-media-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.pro-media-metrics>div{padding:14px;border:1px solid #2b3d52;border-radius:8px;background:#172536}
+.pro-media-metrics small,.pro-media-metrics b{display:block}
+.pro-media-metrics small{color:#8da0b5;font-size:9px}
+.pro-media-metrics b{margin-top:6px;color:#eaf2f8;font-size:20px}
+.pro-media-options button.active{border-color:#65d7b7;background:#1b3834}
+.pro-youth-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.pro-youth-grid>div{padding:14px;border:1px solid #2b3e53;border-radius:9px;background:#172536}
+.pro-youth-grid>div>span,.pro-youth-grid>div>strong,.pro-youth-grid>div>small{display:block}
+.pro-youth-grid>div>span{color:#70dbba;font-size:9px;font-weight:800}
+.pro-youth-grid>div>strong{margin-top:6px;color:#f0f4f8;font-size:14px}
+.pro-youth-ratings{display:flex;gap:12px;margin:12px 0}
+.pro-youth-ratings b{color:#c3d1df;font-size:10px}
+.pro-youth-grid>div>small{color:#8c9eb2;font-size:9px}
+.pro-youth-grid>div>button{width:100%;margin-top:12px;padding:9px;border:0;border-radius:6px;background:#236d5b;color:#eafff8;font-size:10px;font-weight:900}
+@media(max-width:760px){.pro-interview-actions,.pro-media-options{grid-template-columns:1fr}.pro-youth-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.pro-interview-morale{margin-left:0}}
+@media(max-width:480px){.pro-youth-grid{grid-template-columns:1fr}.pro-media-metrics{grid-template-columns:1fr}}
