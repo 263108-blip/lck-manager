@@ -91,12 +91,12 @@ function Schedule({ onStartMatch, teamName = 'T1' }: ScheduleProps) {
         <div>
           <span className="schedule-eyebrow">MATCH CENTER</span>
           <h1>경기 일정</h1>
-          <p>경기 결과를 입력하고 리그 순위에 반영하세요.</p>
+          <p>BO3 경기 일정과 결과를 관리하고, 시즌 순위에 반영하세요.</p>
         </div>
         <div className="schedule-season">
           <span>SEASON</span>
-          <strong>2026</strong>
-          <small>SPRING SPLIT</small>
+          <strong>2027</strong>
+          <small>2027 SEASON</small>
         </div>
       </div>
 
@@ -183,7 +183,7 @@ function Schedule({ onStartMatch, teamName = 'T1' }: ScheduleProps) {
           </div>
 
           <p className="schedule-notice">
-            ※ 현재 경기는 게임 테스트를 위한 예시 데이터입니다.
+            ※ 2027 시즌 일정은 게임 진행을 위한 생성 일정이며, 공식 LCK 발표 일정이 아닙니다.
           </p>
         </section>
 
