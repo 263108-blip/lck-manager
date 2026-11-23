@@ -123,7 +123,7 @@ function loadDraft(): DraftState {
   return initialDraft
 }
 
-export default function Tactics() {
+export default function Tactics({ teamName = 'T1' }: { teamName?: string }) {
   const [draft, setDraft] = useState<DraftState>(loadDraft)
 const [roster, setRoster] = useState<RosterPlayer[]>(loadTacticsRoster)
 
@@ -264,7 +264,7 @@ function getChampionMastery(role: Role, champion: string) {
 
         <div className="draft-columns">
           <div className="draft-team">
-            <h3><span className="team-dot our-dot" />우리 팀 · T1</h3>
+            <h3><span className="team-dot our-dot" />우리 팀 · {teamName}</h3>
 
             {roles.map(role => (
               <div className="draft-slot" key={role}>
