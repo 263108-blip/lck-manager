@@ -33,7 +33,7 @@ type Career = {
   budget:number; initialBudget:number; week:number; morale:number; training:string
   sponsorIncome:number; sponsorName:string; transferSpent:number; wageSpent:number
   scoutingBudget:number; scouted:string[]; staff:Staff[]; history:string[]
-  signedPlayers:string[]; releasedPlayers:string[]
+  signedPlayers:string[]; releasedPlayers:string[]; mediaReputation:number; pressure:number
 }
 const careerKey=(short:string)=>'lck-career-2027-'+short
 const baseStaff=(club:ClubData):Staff[]=>club.coach==='미정' ? [] : [{id:'head-'+club.short,name:club.coach,role:'감독',rating:club.reputation>=95?90:85,salary:0,focus:'팀 운영·밴픽'}]
