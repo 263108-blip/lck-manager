@@ -56,11 +56,24 @@ function App() {
   const opponent = nextMatch ? (nextMatch.home===club?.short?nextMatch.away:nextMatch.home) : null
   const displayDate = new Date(2026,0,12+day).toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})
   function selectClub(selected: Club) {
-    localStorage.setItem('lck-manager-selected-club',JSON.stringify(selected))
     const current = localStorage.getItem('lck-manager-roster')
     let currentTeam = ''
-    try { const parsed = JSON.parse(current || '[]'); currentTeam = parsed[0]?.team || '' } catch { currentTeam = '' }\n    if (!current || currentTeam !== selected.name) localStorage.setItem('lck-manager-roster',JSON.stringify(makeRoster(selected)))
-    setClub(selected); setActive('대시보드')
+    try {
+      const parsed = JSON.parse(current || '[]')
+      currentTeam = parsed[0]?.team || ''
+      const previousClub = clubs.find(item => item.name === currentTeam)
+      if (previousClub && current) {
+        localStorage.setItem('lck-manager-roster-' + previousClub.short, current)
+      }
+    } catch {
+      currentTeam = ''
+    }
+    const savedForClub = localStorage.getItem('lck-manager-roster-' + selected.short)
+    const nextRoster = savedForClub || (currentTeam === selected.name && current ? current : JSON.stringify(makeRoster(selected)))
+    localStorage.setItem('lck-manager-roster', nextRoster)
+    localStorage.setItem('lck-manager-selected-club', JSON.stringify(selected))
+    setClub(selected)
+    setActive('대시보드')
     window.dispatchEvent(new Event('lck-roster-updated'))
   }
   function advanceDay() {
