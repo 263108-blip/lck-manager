@@ -194,3 +194,11 @@
   .mc-strategy select { max-width: none; }
   .mc-auto-label { margin-left: 0; }
 }
+
+
+.mc-series-score{margin:14px 0 8px;padding:10px 14px;border:1px solid #344a61;border-radius:7px;background:#152438;color:#7de0c1;text-align:center;font-size:10px;font-weight:900;letter-spacing:1.3px}
+.mc-between{max-width:760px;margin:50px auto;padding:48px 34px;border:1px solid #38536c;border-radius:16px;background:radial-gradient(circle at 50% 0%,rgba(65,121,139,.22),transparent 58%),#142235;text-align:center}
+.mc-between>span{color:#71ddbd;font-size:10px;font-weight:900;letter-spacing:2px}
+.mc-between h2{margin:14px 0;color:#f4f7fb;font-size:30px}
+.mc-between p{margin:8px 0;color:#a4b5c7;font-size:12px}
+.mc-between button{margin-top:22px;padding:13px 22px;border:0;border-radius:7px;background:#d82e49;color:#fff;font-size:11px;font-weight:900}
