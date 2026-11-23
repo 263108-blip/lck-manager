@@ -32,7 +32,7 @@ export type ClubData = {
 }
 const p = (id:string,name:string,role:Role,age:number,ovr:number,pot:number,lane:number,mech:number,macro:number,teamfight:number,consistency:number,clutch:number,salary:number,value:number,contractUntil:number,team:string,champions:string[],contractStatus:PlayerData['contractStatus']='계약 유지',status:PlayerData['status']='주전'):PlayerData => ({id,name,role,age,overall:ovr,potential:pot,lane,mechanics:mech,macro,teamfight,consistency,clutch,salary,value,contractUntil,team,champions,contractStatus,status})
 export const seasonClubs: ClubData[] = [
-{name:'T1',short:'T1',color:'#d92e46',budget:95,reputation:100,facilities:96,coach:'Tom',players:[
+{name:'T1',short:'T1',color:'#d92e46',budget:95,reputation:100,facilities:96,coach:'미정',players:[
 p('t1-1','Oner','JNG',24,95,96,93,97,96,96,94,96,18,52,2028,'T1',['리 신','바이','비에고','신 짜오']),
 p('t1-2','Faker','MID',31,97,98,96,94,100,99,99,100,30,75,2029,'T1',['아지르','오리아나','갈리오','아리']),
 p('t1-3','Peyz','ADC',21,94,98,96,97,93,96,93,95,16,48,2027,'T1',['카이사','징크스','바루스','제리']),
@@ -54,6 +54,7 @@ p('dk-2','Kanavi','JNG',26,96,97,95,97,97,96,95,96,23,58,2027,'DK',['리 신','�
 p('dk-3','ShowMaker','MID',27,94,95,93,96,97,96,94,97,19,48,2027,'DK',['아지르','신드라','아리','요네'],'확정'),
 p('dk-4','Smash','ADC',21,91,97,92,95,90,93,89,91,10,32,2027,'DK',['징크스','카이사','바루스','제리'],'확정'),
 p('dk-5','Delight','SUP',25,94,96,94,94,95,96,94,95,15,38,2027,'DK',['라칸','렐','노틸러스','알리스타'],'확정'),
+p('dk-6','Lucid','JNG',22,89,96,88,92,91,90,87,89,10,29,2027,'DK',['비에고','바이','리 신'],'계약 유지','후보'),
 ]},
 {name:'KT 롤스터',short:'KT',color:'#e94a50',budget:82,reputation:91,facilities:90,coach:'Score',players:[
 p('kt-1','PerfecT','TOP',22,90,96,90,92,90,91,89,89,9,28,2028,'KT',['크산테','잭스','레넥톤']),
@@ -95,7 +96,7 @@ export const marketPool: PlayerData[] = [
 p('fa-1','Kiin','TOP',27,96,97,97,96,96,97,97,97,25,64,2026,'FA',['크산테','잭스','럼블'],'FA'),
 p('fa-2','Canyon','JNG',26,97,98,96,98,98,97,96,98,28,72,2026,'FA',['니달리','리 신','비에고','세주아니'],'FA'),
 p('fa-3','Zeus','TOP',23,97,99,99,99,95,97,95,98,28,76,2026,'FA',['제이스','그웬','럼블','잭스'],'FA'),
-p('fa-4','Lucid','JNG',22,89,96,88,92,91,90,87,89,10,29,2027,'DRX',['비에고','바이','리 신'],'미확정'),
+
 p('fa-5','Clear','TOP',24,84,91,84,86,84,85,82,83,7,20,2026,'FA',['크산테','럼블'],'FA'),
 p('fa-6','Taeyoon','ADC',23,83,89,83,85,82,84,81,82,6,17,2026,'FA',['징크스','카이사'],'FA'),
 p('fa-7','Kellin','SUP',26,88,91,88,89,90,89,87,87,8,21,2026,'KT',['노틸러스','렐','라칸'],'계약 유지'),
