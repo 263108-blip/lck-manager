@@ -33,7 +33,7 @@ type Career = {
   budget:number; initialBudget:number; week:number; morale:number; training:string
   sponsorIncome:number; sponsorName:string; transferSpent:number; wageSpent:number
   scoutingBudget:number; scouted:string[]; staff:Staff[]; history:string[]
-  signedPlayers:string[]; releasedPlayers:string[]; mediaReputation:number; pressure:number
+  signedPlayers:string[]; releasedPlayers:string[]; listedPlayers:string[]; mediaReputation:number; pressure:number
 }
 const careerKey=(short:string)=>'lck-career-2027-'+short
 const baseStaff=(club:ClubData):Staff[]=>club.coach==='미정' ? [] : [{id:'head-'+club.short,name:club.coach,role:'감독',rating:club.reputation>=95?90:85,salary:0,focus:'팀 운영·밴픽'}]
@@ -41,7 +41,7 @@ const defaultCareer=(club:ClubData):Career=>({
   budget:club.budget,initialBudget:club.budget,week:1,morale:76,training:'균형 훈련',
   sponsorIncome:1.2,sponsorName:'기본 파트너',transferSpent:0,wageSpent:0,
   scoutingBudget:2,scouted:[],staff:baseStaff(club),history:['2027 시즌 프리시즌 감독으로 부임했습니다.'],
-  signedPlayers:[],releasedPlayers:[],mediaReputation:50,pressure:35,
+  signedPlayers:[],releasedPlayers:[],listedPlayers:[],mediaReputation:50,pressure:35,
 })
 const readCareer=(club:ClubData):Career=>{
   try { const raw=localStorage.getItem(careerKey(club.short)); if(raw) return {...defaultCareer(club),...JSON.parse(raw)} as Career } catch {}
@@ -81,7 +81,27 @@ export function advanceCareerWeek(club:Club) {
     next.overall=overall(next)
     return next
   })
-  saveClubRoster(club.short,trained)
+  let activeRoster=trained
+  let transferIncome=0
+  let remainingListed=[...(career.listedPlayers??[])]
+  for(const playerId of remainingListed){
+    const listedPlayer=activeRoster.find(player=>player.id===playerId)
+    if(!listedPlayer) continue
+    const buyer=seasonClubs.filter(team=>team.short!==club.short).find(team=>{
+      const buyerRoster=readClubRoster(team.short)
+      const vacancy=!buyerRoster.some(player=>player.role===listedPlayer.role&&player.status==='주전')
+      return vacancy&&readCareer(team).budget>=listedPlayer.value
+    })
+    if(!buyer) continue
+    const buyerRoster=readClubRoster(buyer.short)
+    const buyerCareer=readCareer(buyer)
+    saveClubRoster(buyer.short,[...buyerRoster,{...listedPlayer,team:buyer.short,status:'주전',contractStatus:'확정'}])
+    save(careerKey(buyer.short),{...buyerCareer,budget:buyerCareer.budget-listedPlayer.value,history:[listedPlayer.name+' 영입 · 이적료 '+money(listedPlayer.value),...buyerCareer.history].slice(0,100)})
+    activeRoster=activeRoster.filter(player=>player.id!==playerId)
+    transferIncome+=listedPlayer.value
+    remainingListed=remainingListed.filter(id=>id!==playerId)
+  }
+  saveClubRoster(club.short,activeRoster)
   // AI 구단도 프리시즌 이적시장에서 매주 한 건씩 영입을 진행합니다.
   const aiTeams=seasonClubs.filter(team=>team.short!==club.short)
   for(let offset=0;offset<aiTeams.length;offset++){
@@ -100,10 +120,10 @@ export function advanceCareerWeek(club:Club) {
     save(careerKey(aiTeam.short),{...aiCareer,budget:aiCareer.budget-fee-candidate.salary*.12,transferSpent:aiCareer.transferSpent+fee,signedPlayers:[...aiCareer.signedPlayers,candidate.id],history:[candidate.name+' 영입 완료 · 이적료 '+money(fee),...aiCareer.history].slice(0,100)})
     break
   }
-  const nextBudget=career.budget-weeklyPayroll+career.sponsorIncome
-  const next={...career,week:career.week+1,budget:nextBudget,wageSpent:career.wageSpent+weeklyPayroll,
+  const nextBudget=career.budget+transferIncome-weeklyPayroll+career.sponsorIncome
+  const next={...career,listedPlayers:remainingListed,week:career.week+1,budget:nextBudget,wageSpent:career.wageSpent+weeklyPayroll,
     morale:Math.min(100,career.morale+(career.training==='균형 훈련'?2:1)),
-    history:[career.week+'주차 종료 · '+career.training+' · 급여 '+money(weeklyPayroll)+' 지급 · 스폰서 '+money(career.sponsorIncome)+' 수입',...career.history].slice(0,100)}
+    history:[...(transferIncome>0?['이적 명단 선수 판매 · 수입 '+money(transferIncome)]:[]),career.week+'주차 종료 · '+career.training+' · 급여 '+money(weeklyPayroll)+' 지급 · 스폰서 '+money(career.sponsorIncome)+' 수입',...career.history].slice(0,100)}
   save(careerKey(club.short),next)
   window.dispatchEvent(new Event('lck-career-updated'))
   return next
@@ -300,6 +320,7 @@ export function ClubOffice({club,page,onChangePage}:{club:Club;page:string;onCha
     {notice&&<div className="pro-notice"><span>{notice}</span><button onClick={()=>setNotice('')}>확인</button></div>}
     <div className="pro-kpis"><div><small>1군 등록</small><b>{roster.length}<em>명</em></b></div><div><small>선수단 연봉</small><b>{money(roster.reduce((s,p)=>s+p.salary,0))}<em>/년</em></b></div><div><small>코칭 스태프</small><b>{career.staff.length}<em>명</em></b></div><div><small>팀 사기</small><b>{career.morale}<em>/100</em></b></div></div>
     {page==='이적시장'&&<section className="pro-panel"><div className="pro-panel-head"><div><small>TRANSFER MARKET · 2027</small><h2>영입 가능한 선수</h2><p>FA는 이적료 없이 협상하고, 계약 중인 선수는 소속 구단의 요구 이적료를 충족해야 합니다.</p></div><div className="pro-filter"><select value={filterRole} onChange={e=>setFilterRole(e.target.value)}>{['전체',...roleOrder].map(r=><option key={r}>{r}</option>)}</select><select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}><option>전체</option><option value="FA">자유계약</option><option value="계약">계약 선수</option></select></div></div><div className="pro-market-head"><span>포지션</span><span>선수 / 계약</span><span>리포트</span><span>시장 가치</span><span>협상</span></div>{filteredMarket.length?filteredMarket.map(p=>playerRow(p,career.scouted.includes(p.id)?'협상 제안':'스카우팅',()=>{if(career.scouted.includes(p.id))startNegotiation(p);else scout(p)})): <p className="pro-empty">현재 조건에 맞는 영입 대상이 없습니다.</p>}</section>}
+    {page==='이적시장'&&<section className="pro-panel"><div className="pro-panel-head"><div><small>OUTGOING TRANSFERS</small><h2>우리 팀 이적 명단</h2><p>선수를 이적 명단에 등록하면 다른 구단이 포지션 공백과 예산에 따라 영입을 제안합니다. 주간 진행 시 협상이 처리됩니다.</p></div><span>{career.listedPlayers.length}명 등록</span></div>{roster.map(player=><div className="pro-staff-row" key={player.id}><div><strong>{player.name}</strong><small>{player.role} · OVR {player.overall} · 계약 {player.contractUntil}년까지</small></div><b>{money(player.value)}</b><button onClick={()=>updateCareer({listedPlayers:career.listedPlayers.includes(player.id)?career.listedPlayers.filter(id=>id!==player.id):[...career.listedPlayers,player.id]},career.listedPlayers.includes(player.id)?player.name+' 선수를 이적 명단에서 제외했습니다.':player.name+' 선수를 이적 명단에 등록했습니다.')}>{career.listedPlayers.includes(player.id)?'명단 제외':'이적 명단 등록'}</button></div>)}</section>}
     {page==='스카우팅'&&<section className="pro-panel"><div className="pro-panel-head"><div><small>SCOUTING NETWORK</small><h2>선수 발굴 및 분석</h2><p>보고서 1건당 {money(.25)} · 잔여 스카우팅 예산 {money(career.scoutingBudget)}</p></div></div><div className="pro-scout-grid">{marketPlayers.filter(p=>!career.scouted.includes(p.id)).slice(0,20).map(p=><button key={p.id} onClick={()=>scout(p)}><span>{p.role} · {p.age}세</span><strong>{p.name}</strong><small>{p.team==='FA'?'FA 시장':p.team+' 소속'} · 잠재력 미확인</small><b>보고서 요청 →</b></button>)}</div>{scoutTarget&&<div className="pro-scout-report"><button className="pro-close" onClick={()=>setScoutTarget(null)}>×</button><small>SCOUTING REPORT</small><h3>{scoutTarget.name} · {scoutTarget.role}</h3><div className="pro-report-stats"><div><span>현재 능력</span><b>{scoutTarget.overall}</b></div><div><span>잠재력</span><b>{scoutTarget.potential}</b></div><div><span>나이</span><b>{scoutTarget.age}</b></div><div><span>일관성</span><b>{scoutTarget.consistency}</b></div></div><p>주요 챔피언: {scoutTarget.champions.join(' · ')}</p><p>선수단 데이터는 공개 경기력 기반의 게임용 평가치입니다.</p></div>}</section>}
     {page==='코칭 스태프'&&<><section className="pro-panel"><div className="pro-panel-head"><div><small>COACHING STAFF</small><h2>현재 코칭 스태프</h2><p>코치의 능력치는 훈련 성장 효율과 경기 준비에 반영됩니다.</p></div></div>{career.staff.map(s=><div className="pro-staff-row" key={s.id}><div><strong>{s.name}</strong><small>{s.role} · {s.focus}</small></div><b>{s.rating}</b><span>연봉 {money(s.salary)}</span></div>)}</section><section className="pro-panel"><div className="pro-panel-head"><div><small>STAFF MARKET</small><h2>영입 가능한 코칭 스태프</h2></div></div>{staffPool.map(s=><div className="pro-staff-row" key={s.id}><div><strong>{s.name}</strong><small>{s.role} · {s.focus}</small></div><b>{s.rating}</b><span>연봉 {money(s.salary)}</span><button disabled={career.staff.some(x=>x.id===s.id)} onClick={()=>hireStaff(s)}>{career.staff.some(x=>x.id===s.id)?'계약 완료':'영입 제안'}</button></div>)}</section></>}
     {page==='훈련'&&<section className="pro-panel"><div className="pro-panel-head"><div><small>PLAYER DEVELOPMENT</small><h2>주간 훈련 프로그램</h2><p>선수 나이와 코칭 스태프 수준에 따라 성장량이 달라집니다. 25세 이상 선수는 성장보다 유지·숙련 중심입니다.</p></div></div><div className="pro-training-grid">{['균형 훈련','라인전','개인 기량','운영','한타'].map(t=><button className={training===t?'active':''} key={t} onClick={()=>saveTrainingPlan(t)}><strong>{t}</strong><small>{t==='균형 훈련'?'전 능력치 소폭 성장':t==='라인전'?'라인전·교전 시작 능력':t==='개인 기량'?'피지컬·챔피언 숙련':t==='운영'?'매크로·오브젝트 판단':'팀파이트·한타 판단'}</small></button>)}</div><div className="pro-training-footer"><span>예상 주급 지출 <b>{money(payroll/52)}</b> · 스폰서 수입 <b>{money(career.sponsorIncome)}</b></span><button onClick={()=>setNotice('훈련 계획은 상단의 1주 진행을 누르면 적용됩니다.')}>훈련 계획 저장</button></div></section>}
