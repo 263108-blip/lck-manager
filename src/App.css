@@ -334,3 +334,8 @@ body{min-width:320px;background:#090d15}
 .lobby-save-notice{margin-top:12px;padding:9px 12px;border:1px solid #477e72;border-radius:6px;background:#17332e;color:#9aecd3;font-size:10px}
 .topbar-actions button:hover,.nav-item:hover,.lobby-slot>button:not(:disabled):hover{filter:brightness(1.16)}
 @media(max-width:520px){.lobby-slot-actions{grid-template-columns:1fr 1fr}}
+
+
+.player-contract-status{display:inline-flex;align-items:center;margin:8px 0 10px;padding:5px 9px;border:1px solid #3b5066;border-radius:4px;background:#17293b;color:#a8bed1;font-size:9px;font-weight:900;letter-spacing:.3px}
+.player-contract-status.confirmed{border-color:#326e5c;background:#16362e;color:#8ce5c4}
+.player-contract-status.rumored{border-color:#80683b;background:#352d1c;color:#f0d18a}
