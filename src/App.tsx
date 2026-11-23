@@ -57,7 +57,10 @@ function App() {
     window.dispatchEvent(new Event('lck-roster-updated'))
   }
   function advanceDay() {
-    const next=day+1; setDay(next); localStorage.setItem('lck-manager-day',String(next))
+    const next=day+7
+    setDay(next)
+    localStorage.setItem('lck-manager-day',String(next))
+    if (club) advanceCareerWeek(club)
   }
   if (!club) return <ClubSelection onSelect={selectClub}/>
   return <div className="app">
@@ -69,7 +72,7 @@ function App() {
       <button className="change-club" onClick={()=>{if(confirm('현재 커리어를 저장한 상태로 구단 선택 화면으로 돌아갈까요?')){setClub(null);setActive('대시보드')}}}>구단 변경</button>
     </aside>
     <main className="main">
-      <header className="topbar"><div><span className="season">2027 PRESEASON</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button onClick={advanceDay}>하루 진행 →</button></div></header>
+      <header className="topbar"><div><span className="season">2027 PRESEASON</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button onClick={advanceDay}>1주 진행 →</button></div></header>
       <section className="content">
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
         : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short}/>
@@ -78,7 +81,7 @@ function App() {
         : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive}/>
         : <div className="fm-dashboard">
-          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 준비하세요.</p></div><div className="fm-season"><span>2027 PRESEASON</span><strong>PRESEASON</strong><small>시즌 {day+1}일차</small></div></div>
+          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 준비하세요.</p></div><div className="fm-season"><span>2027 PRESEASON</span><strong>PRESEASON</strong><small>프리시즌 {Math.floor(day/7)+1}주차</small></div></div>
           <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK · 2027 시즌 프리시즌</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
           <div className="fm-stats">
             <div className="fm-stat-card"><span>선수단</span><strong>{roster.length}<small>명</small></strong><p>등록 선수</p></div>
