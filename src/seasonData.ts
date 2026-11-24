@@ -12,7 +12,7 @@ export type PlayerData = {
   teamfight: number
   consistency: number
   clutch: number
-  champions: string[]
+  champions: (string | {name:string;mastery?:number})[]
   salary: number
   value: number
   contractUntil: number
