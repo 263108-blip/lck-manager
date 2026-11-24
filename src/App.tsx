@@ -118,6 +118,7 @@ function App() {
   }
   const starters = useMemo(() => roster.filter(p=>p.status==='주전'),[roster])
   const teamPower = club ? Math.round((starters.reduce((sum,p)=>sum+(p.overall||70),0)+(5-starters.length)*58)/5) : 0
+  const playoffsReady = matches.some(match=>match.stage==='R3-4') && matches.filter(match=>match.stage==='R3-4').every(match=>match.status==='종료')
   const myStanding = standings.find(t=>t.name===club?.short)
   const myRank = standings.findIndex(t=>t.name===club?.short)+1
   const nextMatch = matches.filter(m=>m.status==='예정'&&(m.home===club?.short||m.away===club?.short)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0]
@@ -232,7 +233,7 @@ function App() {
         : active==='경기 일정' ? <Schedule teamName={club.short} onStartMatch={m=>setActiveMatch(m)}/>
          : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
         : active==='2군 · LCK CL' ? <AcademyLeague teamShort={club.short}/>
-        : active==='플레이오프' ? <Playoffs standings={standings} myTeam={club.short}/>
+        : active==='플레이오프' ? <Playoffs standings={standings} myTeam={club.short} ready={playoffsReady}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive} currentDate={dateKey(gameDate)}/>
         : <div className="fm-dashboard-v2">
           <header className="fm-dash-heading">
