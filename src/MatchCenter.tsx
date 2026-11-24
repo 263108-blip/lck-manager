@@ -46,6 +46,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const [blueSeriesWins,setBlueSeriesWins]=useState(0)
   const [redSeriesWins,setRedSeriesWins]=useState(0)
   const [lastMapWinner,setLastMapWinner]=useState<'blue'|'red'|null>(null)
+  const [statsSaved,setStatsSaved]=useState(false)
 
   const blueName = myTeam
   const redName = match.home === myTeam ? match.away : match.home
@@ -129,6 +130,30 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   }
 
   function completeSeries() {
+    if (!statsSaved) {
+      const seriesWinner = blueSeriesWins > redSeriesWins ? blueName : redName
+      const allPlayers = [...roster.map(player=>({...player,team:blueName})), ...enemyRoster.map(player=>({...player,team:redName}))]
+      let seasonStats:Record<string,{matches:number;wins:number;losses:number;kills:number;deaths:number;assists:number;mvp:number}> = {}
+      try { seasonStats = JSON.parse(localStorage.getItem('lck-player-season-stats-2027') || '{}') } catch {}
+      const performances = allPlayers.filter(player=>player.name!=='공석').map(player=>{
+        const won=player.team===seriesWinner
+        const rating=player.overall??75
+        const role=player.role
+        const impact=Math.max(1,Math.round(rating/22+Math.random()*2))
+        const kills=Math.max(0,Math.round(impact*(role==='ADC'?1.7:role==='MID'?1.45:role==='JNG'?1.2:.75)))
+        const deaths=Math.max(0,Math.round(Math.random()*(won?2.5:4.5)+(won?1:2)))
+        const assists=Math.max(0,Math.round(impact*(role==='SUP'?2.5:role==='JNG'?1.8:1.2)))
+        return {player,won,kills,deaths,assists,impact}
+      })
+      const mvp=performances.filter(p=>p.won).sort((a,b)=>b.impact-a.impact)[0]?.player.name
+      performances.forEach(({player,won,kills,deaths,assists})=>{
+        const previous=seasonStats[player.name]||{matches:0,wins:0,losses:0,kills:0,deaths:0,assists:0,mvp:0}
+        seasonStats[player.name]={matches:previous.matches+1,wins:previous.wins+(won?1:0),losses:previous.losses+(won?0:1),kills:previous.kills+kills,deaths:previous.deaths+deaths,assists:previous.assists+assists,mvp:previous.mvp+(player.name===mvp?1:0)}
+      })
+      localStorage.setItem('lck-player-season-stats-2027',JSON.stringify(seasonStats))
+      window.dispatchEvent(new Event('lck-player-stats-updated'))
+      setStatsSaved(true)
+    }
     if (match.home === blueName) onFinish(blueSeriesWins,redSeriesWins)
     else onFinish(redSeriesWins,blueSeriesWins)
   }
