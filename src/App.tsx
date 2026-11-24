@@ -309,7 +309,7 @@ function App() {
             </section>
             <section className="fm-dash-panel fm-shortcuts-panel">
               <div className="fm-dash-panel-head"><div><small>CLUB OPERATIONS</small><h2>감독 업무</h2></div></div>
-              <div className="fm-manager-shortcuts">{['이적시장','스카우팅','훈련','선수 면담','기자회견','재정 및 스폰서','유망주 육성','2군 · LCK CL','구단 기록'].map((item,index)=><button key={item} onClick={()=>setActive(item)}><span>{['⇄','◎','◷','☏','▤','₩','☆','♙','▣'][index]}</span><b>{item}</b><small>열기 →</small></button>)}</div>
+              <div className="fm-manager-shortcuts">{['이적시장','스카우팅','훈련','선수 면담','기자회견','재정 및 스폰서','유망주 육성','2군 · LCK CL','구단 기록','시즌 캘린더','시상식 · 명예의 전당'].map((item,index)=><button key={item} onClick={()=>setActive(item)}><span>{['⇄','◎','◷','☏','▤','₩','☆','♙','▣','▤','🏅'][index]}</span><b>{item}</b><small>열기 →</small></button>)}</div>
             </section>
           </div>
         </div>}
