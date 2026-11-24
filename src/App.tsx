@@ -10,10 +10,11 @@ import Playoffs from './Playoffs'
 import AcademyLeague from './AcademyLeague'
 import SeasonCalendar from './SeasonCalendar'
 import SeasonAwards from './SeasonAwards'
+import LCKCup, { getNextLckCupDate } from './LCKCup'
 import { getCurrentSeasonEvent, getNextSeasonEvent, getSeasonPhase } from './seasonEvents'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, readClubStaff, seedRosterForClub, type Club } from './ClubManager'
 
-const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프','시즌 캘린더','시상식 · 명예의 전당']
+const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프','시즌 캘린더','시상식 · 명예의 전당','LCK Cup · Split 1']
 function dateFromDay(day:number) { return new Date(2025,10,23+day) }
 function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
 function phaseLabel(phase:string) {
@@ -162,7 +163,8 @@ function App() {
     }
 
     const nextSeasonEvent = getNextSeasonEvent(currentDate)
-    const nextDate = [nextUserMatch?.date, nextSeasonEvent?.start]
+    const nextCupDate = getNextLckCupDate(currentDate)
+    const nextDate = [nextUserMatch?.date, nextCupDate, nextSeasonEvent?.start]
       .filter((value): value is string => Boolean(value))
       .sort()[0]
     let targetDay = day + 7
@@ -199,6 +201,9 @@ function App() {
     saveMatches(progressed)
     if (nextUserMatch && nextUserMatch.date === dateKey(dateFromDay(targetDay))) {
       setSaveMessage(`${nextUserMatch.date} 경기일 도착 · 밴픽과 경기 준비를 진행하세요.`)
+    } else if (nextCupDate && nextCupDate === dateKey(dateFromDay(targetDay))) {
+      setSaveMessage('LCK Cup 경기일 도착 · Group Battle 결과를 진행할 수 있습니다.')
+      setActive('LCK Cup · Split 1')
     } else if (nextSeasonEvent && nextSeasonEvent.start === dateKey(dateFromDay(targetDay))) {
       setSaveMessage(`${nextSeasonEvent.name} 시작일 도착 · 시즌 캘린더에서 대회 정보를 확인하세요.`)
       setActive('시즌 캘린더')
@@ -237,7 +242,7 @@ function App() {
     <aside className="sidebar">
       <div className="logo"><span className="logo-icon">L</span><div><h2>LCK MANAGER</h2><small>ESPORTS MANAGEMENT</small></div></div>
       <div className="manager-label">MANAGEMENT</div>
-      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','♙','🏆','▤','🏅'][index]}</span>{menu}</button>)}</nav>
+      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','♙','🏆','▤','🏅','🏆'][index]}</span>{menu}</button>)}</nav>
       <div className="sidebar-bottom"><div className="team-mini" style={{background:club.color}}>{club.short.slice(0,3)}</div><div><strong>{club.name}</strong><small>감독 커리어 · 2026</small></div></div>
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
@@ -255,6 +260,7 @@ function App() {
         : active==='플레이오프' ? <Playoffs standings={standings} myTeam={club.short} ready={playoffsReady}/>
         : active==='시즌 캘린더' ? <SeasonCalendar currentDate={dateKey(gameDate)}/>
         : active==='시상식 · 명예의 전당' ? <SeasonAwards currentDate={dateKey(gameDate)}/>
+        : active==='LCK Cup · Split 1' ? <LCKCup myTeam={club.short}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive} currentDate={dateKey(gameDate)}/>
         : <div className="fm-dashboard-v2">
           <header className="fm-dash-heading">
@@ -309,7 +315,7 @@ function App() {
             </section>
             <section className="fm-dash-panel fm-shortcuts-panel">
               <div className="fm-dash-panel-head"><div><small>CLUB OPERATIONS</small><h2>감독 업무</h2></div></div>
-              <div className="fm-manager-shortcuts">{['이적시장','스카우팅','훈련','선수 면담','기자회견','재정 및 스폰서','유망주 육성','2군 · LCK CL','구단 기록','시즌 캘린더','시상식 · 명예의 전당'].map((item,index)=><button key={item} onClick={()=>setActive(item)}><span>{['⇄','◎','◷','☏','▤','₩','☆','♙','▣','▤','🏅'][index]}</span><b>{item}</b><small>열기 →</small></button>)}</div>
+              <div className="fm-manager-shortcuts">{['이적시장','스카우팅','훈련','선수 면담','기자회견','재정 및 스폰서','유망주 육성','2군 · LCK CL','구단 기록','시즌 캘린더','시상식 · 명예의 전당'].map((item,index)=><button key={item} onClick={()=>setActive(item)}><span>{['⇄','◎','◷','☏','▤','₩','☆','♙','▣','▤','🏅','🏆'][index]}</span><b>{item}</b><small>열기 →</small></button>)}</div>
             </section>
           </div>
         </div>}
