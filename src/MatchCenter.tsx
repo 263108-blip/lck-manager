@@ -52,6 +52,24 @@ function readRoster(teamShort: string): Player[] {
   })
 }
 
+function readPreparedTactics(teamShort: string): { picks: Record<Role, string>; bans: string[] } {
+  const picks: Record<Role, string> = { TOP: '', JNG: '', MID: '', ADC: '', SUP: '' }
+  try {
+    const saved = JSON.parse(localStorage.getItem(`lck-manager-tactics-2026-${teamShort}`) || 'null') as {
+      ourPicks?: Partial<Record<Role, string>>
+      ourBans?: string[]
+    } | null
+    if (saved?.ourPicks) roles.forEach(role => {
+      const championId = saved.ourPicks?.[role]
+      if (typeof championId === 'string') picks[role] = championId
+    })
+    const bans = Array.isArray(saved?.ourBans) ? saved!.ourBans.filter(id => typeof id === 'string').slice(0, 5) : []
+    return { picks, bans }
+  } catch {
+    return { picks, bans: [] }
+  }
+}
+
 function playerMastery(player: Player, champion: ChampionData): number {
   const entry = player.champions?.find(item => (typeof item === 'string' ? item : item.name) === champion.name || (typeof item === 'string' ? item : item.name) === champion.id)
   return typeof entry === 'object' ? Math.max(0, Math.min(100, entry.mastery ?? 0)) : 0
@@ -193,8 +211,8 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   const [stage, setStage] = useState<'draft' | 'game' | 'between' | 'result'>('draft')
   const [draftMode, setDraftMode] = useState<DraftMode>('ban')
   const [activeRole, setActiveRole] = useState<Role>('TOP')
-  const [bans, setBans] = useState<string[]>([])
-  const [picks, setPicks] = useState<Record<Role, string>>({ TOP: '', JNG: '', MID: '', ADC: '', SUP: '' })
+  const [bans, setBans] = useState<string[]>(() => readPreparedTactics(myTeam).bans)
+  const [picks, setPicks] = useState<Record<Role, string>>(() => readPreparedTactics(myTeam).picks)
   const [enemyPicks, setEnemyPicks] = useState<Record<Role, string>>({ TOP: '', JNG: '', MID: '', ADC: '', SUP: '' })
   const [search, setSearch] = useState('')
   const [roleFilter, setRoleFilter] = useState<Role | 'ALL'>('ALL')
