@@ -345,3 +345,133 @@ body{min-width:320px;background:#090d15}
 .fm-match-actions .fm-primary-button{margin-top:0}
 .fm-match-actions .fm-secondary-button{padding:11px 12px;border:1px solid #3b5068;border-radius:6px;background:#1a2b3f;color:#dce7f2;font-size:10px;font-weight:800}
 @media(max-width:520px){.fm-match-actions{grid-template-columns:1fr}}
+
+
+/* FM-inspired information-dense management interface */
+:root {
+  --fm-bg: #0a0e15;
+  --fm-panel: #121a26;
+  --fm-panel-raised: #172232;
+  --fm-border: #29384b;
+  --fm-muted: #8291a5;
+  --fm-text: #e8edf5;
+  --fm-accent: #65d6b5;
+  --fm-red: #df4058;
+}
+html, body { background: var(--fm-bg); }
+.app { min-height: 100vh; background: var(--fm-bg); }
+.sidebar {
+  width: 252px; flex-basis: 252px; padding: 22px 13px 16px;
+  background: #0d141e; border-right: 1px solid #243143;
+}
+.logo { padding: 5px 9px 27px; }
+.logo-icon { border-radius: 8px; box-shadow: 0 5px 18px #d92e4630; }
+.sidebar nav { gap: 3px; }
+.nav-item { padding: 10px 12px; border-radius: 5px; font-size: 12px; }
+.nav-item.active { background: #1b3540; box-shadow: inset 3px 0 0 var(--fm-accent); }
+.manager-label { padding-bottom: 9px; }
+.sidebar-bottom { padding-top: 13px; }
+.change-club {
+  margin-top: 10px; padding: 9px 10px; border: 1px solid #29384b;
+  border-radius: 5px; color: #aab6c6; background: #141e2b; font-size: 11px;
+}
+.main { min-width: 0; background: #0a0e15; }
+.topbar {
+  position: sticky; top: 0; z-index: 20; height: 62px; padding: 0 28px;
+  background: #101823ee; backdrop-filter: blur(12px); border-bottom-color: #263548;
+}
+.topbar-actions { display:flex; align-items:center; gap:9px; }
+.topbar-actions button {
+  padding: 9px 13px; border: 1px solid #34455b; border-radius: 5px;
+  background: #1a2838; color: #dce5ef; font-size: 11px; font-weight: 700;
+}
+.topbar-actions button:last-child {
+  border-color: #65d6b5; background: #65d6b5; color: #092018;
+}
+.content { max-width: 1740px; padding: 25px 28px 44px; }
+.fm-welcome { padding-bottom: 4px; }
+.fm-welcome h1 { font-size: 27px; letter-spacing: -.6px; }
+.fm-team-banner {
+  border-radius: 7px; border-color: #34465c;
+  background: linear-gradient(105deg,#17283b 0%,#172333 62%,#2b202b 100%);
+  padding: 19px 23px;
+}
+.fm-team-symbol { border-radius: 8px; }
+.fm-stats { gap: 9px; }
+.fm-stat-card, .fm-panel {
+  border-radius: 6px; border-color: #2b394c; background: var(--fm-panel);
+}
+.fm-stat-card { padding: 14px 16px; }
+.fm-panel { padding: 17px 18px; }
+.fm-panel-heading { padding-bottom: 10px; border-bottom: 1px solid #263448; }
+.fm-panel-heading h2 { font-size: 15px; }
+.fm-player-row { padding: 9px 0; }
+.fm-player-avatar, .fm-match-logo { border-radius: 6px; }
+.fm-primary-button {
+  border-radius: 5px; background: var(--fm-accent); color: #092018;
+}
+.fm-secondary-button {
+  width: 100%; margin-top: 7px; padding: 10px; border: 1px solid #34465b;
+  border-radius: 5px; background: #172333; color: #b8c5d5; font-size: 11px;
+}
+.dashboard-shortcuts { gap: 7px; }
+.dashboard-shortcuts button {
+  border-radius: 5px; border-color: #2b3a4d; background: #172333;
+}
+.roster-page, .schedule-page, .league-page, .tactics-page { color: var(--fm-text); }
+.roster-title h1, .schedule-header h1, .league-header h1, .tactics-heading h1 { letter-spacing: -.6px; }
+.roster-summary > div, .schedule-summary-card, .league-summary > div {
+  border-radius: 6px; border-color: #2b394c; background: #141e2b;
+}
+.roster-layout { gap: 14px; }
+.roster-list, .player-detail, .schedule-list-panel, .schedule-detail-panel,
+.league-table-panel, .tactics-panel {
+  border-radius: 6px; border-color: #2b394c; background: #121a26;
+}
+.player-card { border-radius: 5px; }
+.player-card.selected { border-color: #65d6b5; background: #1a3038; }
+.player-detail { padding: 20px; }
+.detail-header { border-bottom: 1px solid #2a394c; padding-bottom: 16px; }
+.overall-score { border-radius: 6px; }
+.stat-row { gap: 12px; }
+.stat-bar { overflow: hidden; border-radius: 2px; background: #263548; }
+.stat-bar > div { border-radius: 2px; background: linear-gradient(90deg,#348e85,#65d6b5); }
+.league-table { width: 100%; border-collapse: collapse; }
+.league-table th { background: #182434; color: #91a2b8; }
+.league-table td, .league-table th { padding: 12px 13px; border-bottom: 1px solid #263448; }
+.league-table tbody tr:hover { background: #1a2838; }
+.league-table tbody tr.my-team { background: #18313a; }
+.schedule-match, .schedule-detail-panel button { border-radius: 5px; }
+.tactics-overview > div { border-radius: 5px; background: #172333; border-color: #2b394c; }
+.tactics-panel { padding: 18px; }
+button { transition: background-color .16s ease, border-color .16s ease, color .16s ease, transform .16s ease; }
+button:disabled { cursor: not-allowed; opacity: .45; }
+button:not(:disabled):active { transform: translateY(1px); }
+input, select { color-scheme: dark; }
+input, select, textarea {
+  border-color: #34465b; background-color: #101a27; color: #e8edf5;
+}
+@media (max-width: 1100px) {
+  .sidebar { width: 215px; flex-basis: 215px; }
+  .content { padding: 20px 18px 36px; }
+  .fm-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 760px) {
+  .app { display: block; }
+  .sidebar { width: 100%; min-height: 0; padding: 10px; border-right: 0; border-bottom: 1px solid #243143; }
+  .logo { padding: 5px 8px 12px; }
+  .manager-label, .sidebar-bottom, .change-club { display: none; }
+  .sidebar nav { display: flex; overflow-x: auto; gap: 5px; padding-bottom: 3px; }
+  .nav-item { flex: 0 0 auto; width: auto; white-space: nowrap; padding: 9px 11px; }
+  .topbar { height: auto; min-height: 58px; padding: 10px 12px; gap: 8px; }
+  .topbar-actions { flex-wrap: wrap; justify-content: flex-end; }
+  .profile { display: none; }
+  .content { padding: 17px 12px 28px; }
+  .fm-welcome { align-items: flex-start; flex-direction: column; }
+  .fm-season { text-align: left; }
+  .fm-team-banner { padding: 14px; }
+  .fm-team-info h2 { font-size: 19px; }
+  .fm-dashboard-grid { grid-template-columns: 1fr; }
+  .schedule-content { grid-template-columns: 1fr; }
+  .roster-layout { grid-template-columns: 1fr; }
+}
