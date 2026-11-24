@@ -11,7 +11,7 @@ export type Match = {
   awayScore?:number
 }
 export const teams=['T1','GEN.G','HLE','DK','KT','DRX','BNK FEARX','NS','BRO','DN']
-const STORAGE_KEY='lck-manager-matches-2027'
+const STORAGE_KEY='lck-manager-matches-2026'
 const UPDATE_EVENT='lck-matches-updated'
 
 function buildSeasonFixtures():Match[] {
@@ -31,7 +31,7 @@ function buildSeasonFixtures():Match[] {
   }
   const fixtures:Match[]=[]
   let id=1
-  const start=new Date(2027,0,13)
+  const start=new Date(2026,0,14)
   for(let round=0;round<18;round++){
     const reverse=round>=9
     const games=firstHalf[round%9]
