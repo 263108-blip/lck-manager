@@ -378,9 +378,9 @@ export function advanceMatch(state: MatchState): MatchState {
   // Games are not stopped at an arbitrary 32-minute mark. The hard limit is only a
   // failsafe for pathological simulations; the winner is determined by map state.
   if (!next.over && next.seconds >= 5400) {
-    const blueScore = next.blue.kills * 2 + next.blue.gold / 1000 + next.blue.dragons.length * 3 + next.blue.grubs + next.blue.herald * 2
+    const blueScore = next.blue.kills * 2 + next.blue.gold / 1000 + next.blue.dragons.length * 3 + next.blue.grubs + Number(next.blue.herald) * 2
       + (LANES.reduce((sum, lane) => sum + (3 - next.blue.towersRemaining[lane]), 0) * 2)
-    const redScore = next.red.kills * 2 + next.red.gold / 1000 + next.red.dragons.length * 3 + next.red.grubs + next.red.herald * 2
+    const redScore = next.red.kills * 2 + next.red.gold / 1000 + next.red.dragons.length * 3 + next.red.grubs + Number(next.red.herald) * 2
       + (LANES.reduce((sum, lane) => sum + (3 - next.red.towersRemaining[lane]), 0) * 2)
     next.over = true
     next.winner = blueScore >= redScore ? 'blue' : 'red'
