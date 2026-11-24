@@ -134,31 +134,71 @@ function App() {
     window.dispatchEvent(new Event('lck-roster-updated'))
   }
   function advanceDay() {
-    const next=day+7
-    const nextDate=dateFromDay(next)
-    const currentDate=dateKey(nextDate)
-    setDay(next)
-    localStorage.setItem('lck-manager-day',String(next))
-    if (club) {
-      advanceCareerWeek(club)
-      const teamPowerFor=(short:string)=>{
-        const lineup=readClubRoster(short).filter(player=>player.status==='주전')
-        return (lineup.reduce((sum,player)=>sum+player.overall,0)+(5-lineup.length)*58)/5
-      }
-      // Every match whose date has passed is resolved, including the manager's
-      // own missed fixture. A missed match must never block the season calendar.
-      const progressed=matches.map(match=>{
-        if(match.status!=='예정'||match.date>currentDate) return match
-        const difference=teamPowerFor(match.home)-teamPowerFor(match.away)
-        const homeWin=Math.random()<Math.max(.18,Math.min(.82,.5+difference*.018))
-        const close=Math.random()<.48
-        return {...match,status:'종료' as const,homeScore:homeWin?2:(close?1:0),awayScore:homeWin?(close?1:0):2}
+    if (!club) return
+    const currentDate = dateKey(dateFromDay(day))
+    const nextUserMatch = matches
+      .filter(match => match.status === '예정' && (match.home === club.short || match.away === club.short))
+      .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time))[0]
+
+    if (nextUserMatch && nextUserMatch.date <= currentDate) {
+      setActiveMatch(nextUserMatch)
+      return
+    }
+
+    let targetDay = day + 1
+    if (nextUserMatch) {
+      const [year, month, date] = nextUserMatch.date.split('-').map(Number)
+      const target = new Date(year, month - 1, date)
+      targetDay = Math.max(day + 1, Math.round((target.getTime() - dateFromDay(0).getTime()) / 86400000))
+    }
+
+    const teamPowerFor = (short: string) => {
+      const lineup = readClubRoster(short).filter(player => player.status === '주전')
+      return (lineup.reduce((sum, player) => sum + player.overall, 0) + (5 - lineup.length) * 58) / 5
+    }
+
+    let progressed = [...matches]
+    let processedOtherMatches = 0
+    for (let offset = day + 1; offset <= targetDay; offset++) {
+      if (Math.floor(offset / 7) > Math.floor((offset - 1) / 7)) advanceCareerWeek(club)
+      const simulatedDate = dateKey(dateFromDay(offset))
+      progressed = progressed.map(match => {
+        if (match.status !== '예정' || match.date > simulatedDate || match.date <= currentDate) return match
+        // The manager's own match is never auto-resolved. The game stops on its date.
+        if (match.home === club.short || match.away === club.short) return match
+        const difference = teamPowerFor(match.home) - teamPowerFor(match.away)
+        const homeWin = Math.random() < Math.max(.18, Math.min(.82, .5 + difference * .018))
+        const close = Math.random() < .48
+        processedOtherMatches += 1
+        return { ...match, status: '종료' as const, homeScore: homeWin ? 2 : (close ? 1 : 0), awayScore: homeWin ? (close ? 1 : 0) : 2 }
       })
-      saveMatches(progressed)
-      const missed=progressed.filter((match,index)=>matches[index].status==='예정'&&match.date<=currentDate).length
-      if(missed>0) setSaveMessage(missed+'경기 자동 진행 · 시즌 일정 업데이트')
+    }
+
+    setDay(targetDay)
+    localStorage.setItem('lck-manager-day', String(targetDay))
+    saveMatches(progressed)
+    if (nextUserMatch && nextUserMatch.date === dateKey(dateFromDay(targetDay))) {
+      setSaveMessage(`${nextUserMatch.date} 경기일 도착 · 밴픽과 경기 준비를 진행하세요.`)
+    } else if (processedOtherMatches > 0) {
+      setSaveMessage(`다음 일정까지 진행 · 다른 구단 ${processedOtherMatches}경기 결과 반영`)
+    } else {
+      setSaveMessage('다음 주요 일정까지 시간이 진행되었습니다.')
     }
   }
+  useEffect(() => {
+    const handleSpacebar = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || event.repeat || showLobby || activeMatch) return
+      const target = event.target
+      if (target instanceof HTMLElement && (
+        target.isContentEditable ||
+        ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName)
+      )) return
+      event.preventDefault()
+      advanceDay()
+    }
+    window.addEventListener('keydown', handleSpacebar)
+    return () => window.removeEventListener('keydown', handleSpacebar)
+  }, [showLobby, activeMatch, day, club, matches])
   if (showLobby) return <div className="lobby-screen">
     <div className="lobby-top"><div className="lobby-brand"><b>LCK</b><span>MANAGER 2027</span></div><span className="lobby-build">CAREER MODE · KOREA</span></div>
     <div className="lobby-hero"><div className="lobby-kicker">THE NEXT ERA STARTS HERE</div><h1>당신의 선택으로<br/><em>LCK의 역사가 바뀝니다.</em></h1><p>구단을 운영하고, 선수단을 구성하고, 무대 위에서 승리를 만들어 보세요.</p>
@@ -179,7 +219,7 @@ function App() {
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
     <main className="main">
-      <header className="topbar"><div><span className="season">2027 {seasonPhase}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{seasonPhase==='OFFSEASON'?'다음 주 진행':'1주 진행 →'}</button></div></header>
+      <header className="topbar"><div><span className="season">2027 {seasonPhase}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><span className="spacebar-hint">SPACE 계속하기</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{nextMatch ? '다음 경기일까지 →' : '다음 일정까지 →'}</button></div></header>
       <section className="content">{saveMessage && <div className="save-toast">{saveMessage}</div>}
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
         : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short} onOpenMarket={()=>setActive('이적시장')}/>
