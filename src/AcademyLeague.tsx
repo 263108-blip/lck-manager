@@ -143,13 +143,13 @@ function rowsFor(state:Save,ids:string[]):Row[] {
 }
 function playinMatches(challenge:string[],trial:string[]):Match[] {
   return [
-    {id:'CL-PI-1',date:'2026-09-02',stage:'PLAYIN',round:'준결승 1',home:challenge[4],away:trial[1],bestOf:3,status:'예정'},
-    {id:'CL-PI-2',date:'2026-09-03',stage:'PLAYIN',round:'준결승 2',home:trial[0],away:trial[2],bestOf:3,status:'예정'},
+    {id:'CL-PI-1',date:'2026-08-24',stage:'PLAYIN',round:'준결승 1',home:challenge[4],away:trial[1],bestOf:3,status:'예정'},
+    {id:'CL-PI-2',date:'2026-08-25',stage:'PLAYIN',round:'준결승 2',home:trial[0],away:trial[2],bestOf:3,status:'예정'},
   ]
 }
 function afterPlayin(challenge:string[],winners:string[]):Match[] {
   return [
-    {id:'CL-QF-1',date:'2026-09-08',stage:'PLAYOFFS',round:'플레이오프 1라운드',home:challenge[2],away:winners[1],bestOf:5,status:'예정'},
+    {id:'CL-QF-1',date:'2026-08-31',stage:'PLAYOFFS',round:'플레이오프 1라운드',home:challenge[2],away:winners[1],bestOf:5,status:'예정'},
     {id:'CL-QF-2',date:'2026-09-08',stage:'PLAYOFFS',round:'플레이오프 1라운드',home:challenge[3],away:winners[0],bestOf:5,status:'예정'},
   ]
 }
@@ -158,7 +158,7 @@ function transition(state:Save):Save {
     const ranking=rowsFor(state,academyTeams.map(team=>team.id))
     const challenge=ranking.slice(0,5).map(row=>row.id)
     const trial=ranking.slice(5).map(row=>row.id)
-    return {...state,stage:'R3-4',challenge,trial,matches:[...state.matches,...roundsFor(challenge,'CL-R34-C','R3-4','2026-07-01','CHALLENGE'),...roundsFor(trial,'CL-R34-T','R3-4','2026-07-01','TRIAL')],history:['R1~2 종료 · Challenge Group과 Trial Group 편성 완료',...state.history]}
+    return {...state,stage:'R3-4',challenge,trial,matches:[...state.matches,...roundsFor(challenge,'CL-R34-C','R3-4','2026-07-27','CHALLENGE'),...roundsFor(trial,'CL-R34-T','R3-4','2026-07-01','TRIAL')],history:['R1~2 종료 · Challenge Group과 Trial Group 편성 완료',...state.history]}
   }
   if(state.stage==='R3-4'&&state.matches.filter(match=>match.stage==='R3-4').every(match=>match.status==='종료')){
     return {...state,stage:'PLAYIN',matches:[...state.matches,...playinMatches(state.challenge,state.trial)],history:['R3~4 종료 · 플레이-인 4팀 진출',...state.history]}
@@ -176,13 +176,13 @@ function transition(state:Save):Save {
     if(quarter.length===2&&quarter.every(match=>match.status==='종료')&&semi.length===0){
       const winners=quarter.map(match=>match.winner ?? '')
       const next:Match[]=[
-        {id:'CL-SF-1',date:'2026-09-12',stage:'PLAYOFFS',round:'플레이오프 2라운드',home:state.challenge[0],away:winners[1],bestOf:5,status:'예정'},
+        {id:'CL-SF-1',date:'2026-09-08',stage:'PLAYOFFS',round:'플레이오프 2라운드',home:state.challenge[0],away:winners[1],bestOf:5,status:'예정'},
         {id:'CL-SF-2',date:'2026-09-12',stage:'PLAYOFFS',round:'플레이오프 2라운드',home:state.challenge[1],away:winners[0],bestOf:5,status:'예정'},
       ]
       return {...state,matches:[...state.matches,...next],history:['플레이오프 2라운드 진출팀 확정',...state.history]}
     }
     if(semi.length===2&&semi.every(match=>match.status==='종료')&&!final){
-      return {...state,matches:[...state.matches,{id:'CL-FINAL',date:'2026-09-16',stage:'PLAYOFFS',round:'결승',home:semi[0].winner ?? '',away:semi[1].winner ?? '',bestOf:5,status:'예정'}],history:['결승 대진 확정',...state.history]}
+      return {...state,matches:[...state.matches,{id:'CL-FINAL',date:'2026-09-15',stage:'PLAYOFFS',round:'결승',home:semi[0].winner ?? '',away:semi[1].winner ?? '',bestOf:5,status:'예정'}],history:['결승 대진 확정',...state.history]}
     }
     if(final&&final.status==='종료'){
       return {...state,stage:'OFFSEASON',champion:final.winner ?? '',history:['2026 LCK CL 우승팀 · '+(final.winner ?? '미정'),...state.history]}
