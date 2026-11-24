@@ -8,7 +8,7 @@ import MatchCenter from './MatchCenter'
 import Tactics from './Tactics'
 import Playoffs from './Playoffs'
 import AcademyLeague from './AcademyLeague'
-import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, seedRosterForClub, type Club } from './ClubManager'
+import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, readClubStaff, seedRosterForClub, type Club } from './ClubManager'
 
 const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프']
 function dateFromDay(day:number) { return new Date(2026,0,1+day) }
@@ -125,6 +125,8 @@ function App() {
   const gameDate = dateFromDay(day)
   const seasonPhase = getSeasonPhase(day,matches)
   const displayDate = gameDate.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})
+  const staffProfiles=readClubStaff(club?.short ?? '',dateKey(gameDate))
+  const headCoach=staffProfiles.find(staff=>staff.role==='감독') ?? staffProfiles[0]
   function selectClub(selected: Club) {
     const nextRoster = readClubRoster(selected.short)
     localStorage.setItem('lck-manager-roster-' + selected.short, JSON.stringify(nextRoster))
@@ -232,20 +234,61 @@ function App() {
         : active==='2군 · LCK CL' ? <AcademyLeague teamShort={club.short}/>
         : active==='플레이오프' ? <Playoffs standings={standings} myTeam={club.short}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive} currentDate={dateKey(gameDate)}/>
-        : <div className="fm-dashboard">
-          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2026 시즌을 운영하세요. 현재 단계: {phaseLabel(seasonPhase)}</p></div><div className="fm-season"><span>2026 SEASON</span><strong>{phaseLabel(seasonPhase)}</strong><small>{seasonPhase==='PRESEASON'?'정규 시즌 개막까지 준비 중':seasonPhase==='REGULAR SEASON'?'정규 시즌 진행 중':'정규 시즌 종료 · 다음 시즌 준비'}</small></div></div>
-          <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK · 2026 {phaseLabel(seasonPhase)}</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
-          <div className="fm-stats">
-            <div className="fm-stat-card"><span>선수단</span><strong>{roster.length}<small>명</small></strong><p>등록 선수</p></div>
-            <div className="fm-stat-card"><span>리그 순위</span><strong>{myRank||'-'}<small>위</small></strong><p>현재 리그 순위</p></div>
-            <div className="fm-stat-card"><span>승률</span><strong>{myStanding?.winRate??0}<small>%</small></strong><p>{myStanding?.wins??0}승 {myStanding?.losses??0}패</p></div>
-            <div className="fm-stat-card"><span>다음 경기</span><strong className="fm-date-number">{nextMatch?nextMatch.date.slice(5).replace('-','.'): '-'}</strong><p>{opponent?opponent+'와 대결':'예정된 경기 없음'}</p></div>
+        : <div className="fm-dashboard-v2">
+          <header className="fm-dash-heading">
+            <div><span>2026 LCK MANAGER · CAREER MODE</span><h1>구단 운영 센터</h1><p>{club.name} · {displayDate} · {phaseLabel(seasonPhase)}</p></div>
+            <div className="fm-dash-date"><small>시즌 진행</small><strong>{phaseLabel(seasonPhase)}</strong><span>{seasonPhase==='PRESEASON'?'프리시즌 준비':seasonPhase==='REGULAR SEASON'?'정규 시즌 진행':'포스트시즌 및 시즌 종료'}</span></div>
+          </header>
+          <section className="fm-club-strip">
+            <div className="fm-club-crest" style={{background:club.color}}>{club.short}</div>
+            <div className="fm-club-ident"><small>MANAGER · FIRST TEAM</small><strong>{club.name}</strong><span>2026 LCK · 구단 평판 {clubs.find(item=>item.short===club.short)?.strength ?? teamPower}</span></div>
+            <div className="fm-club-rating"><small>TEAM OVR</small><b>{teamPower}</b></div>
+            <div className="fm-club-record"><small>리그 성적</small><b>{myStanding?.wins??0}승 {myStanding?.losses??0}패</b></div>
+          </section>
+          <div className="fm-dash-kpis">
+            <div><small>현재 순위</small><strong>{myRank||'-'}<em>위</em></strong><span>10개 구단</span></div>
+            <div><small>승률</small><strong>{myStanding?.winRate??0}<em>%</em></strong><span>{myStanding?.wins??0}승 {myStanding?.losses??0}패</span></div>
+            <div><small>등록 선수</small><strong>{roster.length}<em>명</em></strong><span>주전 {starters.length}명</span></div>
+            <div><small>다음 경기</small><strong className="date-value">{nextMatch?nextMatch.date.slice(5).replace('-','.'):'—'}</strong><span>{opponent?opponent+' 상대': '예정 경기 없음'}</span></div>
           </div>
-          <div className="fm-dashboard-grid">
-            <section className="fm-panel"><div className="fm-panel-heading"><div><span>FIRST TEAM</span><h2>주요 선수단</h2></div><button onClick={()=>setActive('선수단')}>선수단 관리 →</button></div>{starters.map((p,i)=><div className="fm-player-row" key={p.name}><span className="fm-player-number">0{i+1}</span><div className="fm-player-avatar">{p.name[0]}</div><div className="fm-player-name"><strong>{p.name}</strong><small>{p.role}</small></div><div className="fm-player-rating"><strong>{p.overall}</strong><small>OVR</small></div></div>)}</section>
-            <section className="fm-panel"><div className="fm-panel-heading"><div><span>MATCH CENTER</span><h2>다음 경기</h2></div><span className="fm-upcoming">{nextMatch?'UPCOMING':'NO MATCH'}</span></div>{nextMatch?<><div className="fm-match-date">{nextMatch.date} · {nextMatch.time}</div><div className="fm-match-teams"><div className="fm-match-team"><div className="fm-match-logo" style={{background:club.color}}>{club.short}</div><strong>{club.short}</strong></div><div className="fm-match-vs"><strong>VS</strong><small>LCK</small></div><div className="fm-match-team"><div className="fm-match-logo geng">{opponent}</div><strong>{opponent}</strong></div></div></>:<p>예정된 경기가 없습니다.</p>}<div className="fm-match-actions">{nextMatch && <button className="fm-primary-button" onClick={()=>setActiveMatch(nextMatch)}>다음 경기 바로 시작</button>}<button className="fm-secondary-button" onClick={()=>setActive('경기 일정')}>경기 일정 확인하기</button></div></section>
-            <section className="fm-panel"><div className="fm-panel-heading"><div><span>LEAGUE TABLE</span><h2>LCK 리그 순위</h2></div><button onClick={()=>setActive('리그 순위')}>전체 보기 →</button></div><div className="fm-standing-header"><span>순위</span><span>구단</span><span>전적</span></div>{standings.slice(0,5).map((team,index)=><div className="fm-standing-row" key={team.name}><strong>{index+1}</strong><span>{team.name}</span><small>{team.wins}승 {team.losses}패</small></div>)}</section>
-            <section className="fm-panel"><div className="fm-panel-heading"><div><span>MANAGER SHORTCUTS</span><h2>구단 운영 바로가기</h2></div></div><div className="dashboard-shortcuts">{['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].map((item,i)=><button key={item} onClick={()=>setActive(item)}><span>{['⇄','◎','♟','◷','☏','▤','☆','₩','▣'][i]}</span><strong>{item}</strong><small>운영 메뉴 열기 →</small></button>)}</div></section>
+          <div className="fm-dash-columns">
+            <section className="fm-dash-panel fm-squad-panel">
+              <div className="fm-dash-panel-head"><div><small>FIRST TEAM · SQUAD</small><h2>1군 선수단</h2></div><button onClick={()=>setActive('선수단')}>전체 선수단 →</button></div>
+              <div className="fm-squad-table"><div className="fm-squad-table-head"><span>POS</span><span>선수</span><span>OVR</span><span>상태</span></div>
+                {['TOP','JNG','MID','ADC','SUP'].map(role=>{
+                  const player=starters.find(item=>item.role===role) ?? roster.find(item=>item.role===role)
+                  return <div className="fm-squad-line" key={role}><span>{role}</span><strong>{player?.name ?? '공석'}</strong><b>{player?.overall ?? '—'}</b><small>{player?.status ?? '선수 없음'}</small></div>
+                })}
+              </div>
+              <div className="fm-squad-foot"><span>선수단 관리와 능력치 상세</span><button onClick={()=>setActive('선수단')}>선수 프로필 열기</button></div>
+            </section>
+            <section className="fm-dash-panel fm-fixture-panel">
+              <div className="fm-dash-panel-head"><div><small>MATCH CENTER</small><h2>다음 경기</h2></div><span className={nextMatch?'fm-live-tag':'fm-muted-tag'}>{nextMatch?'UPCOMING':'NO FIXTURE'}</span></div>
+              {nextMatch ? <>
+                <div className="fm-fixture-date">{nextMatch.date} · {nextMatch.time}</div>
+                <div className="fm-fixture-versus"><div><span className="fm-fixture-crest" style={{background:club.color}}>{club.short}</span><b>{club.short}</b></div><strong>VS</strong><div><span className="fm-fixture-crest opponent">{opponent}</span><b>{opponent}</b></div></div>
+                <p className="fm-fixture-note">경기일에 도착하면 밴픽과 경기 준비를 진행할 수 있습니다.</p>
+                <button className="fm-fixture-action" onClick={()=>setActiveMatch(nextMatch)}>경기 준비 및 밴픽 →</button>
+              </> : <div className="fm-no-fixture">현재 예정된 구단 경기가 없습니다.</div>}
+              <button className="fm-panel-link" onClick={()=>setActive('경기 일정')}>전체 경기 일정 보기</button>
+            </section>
+            <section className="fm-dash-panel fm-staff-panel">
+              <div className="fm-dash-panel-head"><div><small>MANAGEMENT STAFF</small><h2>감독 및 코칭 스태프</h2></div><button onClick={()=>setActive('코칭 스태프')}>관리 →</button></div>
+              {headCoach ? <div className="fm-head-coach"><div className="fm-coach-initial">{headCoach.name.slice(0,1)}</div><div><small>HEAD COACH</small><strong>{headCoach.name}</strong><span>{headCoach.realName || '본명 미확인'}</span></div><b>{headCoach.age===null || headCoach.age===undefined?'나이 미확인':headCoach.age+'세'}</b></div> : <div className="fm-no-coach">감독 정보가 등록되어 있지 않습니다.</div>}
+              <div className="fm-staff-list">{staffProfiles.filter(staff=>staff.role!=='감독').slice(0,4).map(staff=><div key={staff.id}><span>{staff.role}</span><b>{staff.name}</b><small>{staff.age===null || staff.age===undefined?'나이 확인 불가':staff.age+'세'}</small></div>)}</div>
+              <p className="fm-staff-note">생년월일이 확인된 인원만 현재 커리어 날짜 기준 만 나이를 표시합니다.</p>
+            </section>
+          </div>
+          <div className="fm-dash-lower">
+            <section className="fm-dash-panel fm-standings-panel">
+              <div className="fm-dash-panel-head"><div><small>LCK · TABLE</small><h2>리그 순위</h2></div><button onClick={()=>setActive('리그 순위')}>전체 순위 →</button></div>
+              <div className="fm-mini-table-head"><span>#</span><span>구단</span><span>경기</span><span>승률</span></div>
+              {standings.slice(0,6).map((team,index)=><div className={team.name===club.short?'fm-mini-table-row my-team':'fm-mini-table-row'} key={team.name}><b>{index+1}</b><strong>{team.name}</strong><span>{team.wins}승 {team.losses}패</span><small>{team.winRate}%</small></div>)}
+            </section>
+            <section className="fm-dash-panel fm-shortcuts-panel">
+              <div className="fm-dash-panel-head"><div><small>CLUB OPERATIONS</small><h2>감독 업무</h2></div></div>
+              <div className="fm-manager-shortcuts">{['이적시장','스카우팅','훈련','선수 면담','기자회견','재정 및 스폰서','유망주 육성','2군 · LCK CL','구단 기록'].map((item,index)=><button key={item} onClick={()=>setActive(item)}><span>{['⇄','◎','◷','☏','▤','₩','☆','♙','▣'][index]}</span><b>{item}</b><small>열기 →</small></button>)}</div>
+            </section>
           </div>
         </div>}
       </section>
