@@ -1,8 +1,8 @@
 export type StaffProfile = {
   id: string
   name: string
-  realName: string
-  role: '감독' | '코치' | '전략 코치' | '분석 코치' | '팀 디렉터'
+  realName?: string
+  role: string
   birthDate?: string
   rating: number
   salary: number
