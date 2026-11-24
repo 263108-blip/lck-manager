@@ -29,7 +29,7 @@ export function saveClubRoster(short:string, roster:PlayerData[]) {
   if(activeShort===short) localStorage.setItem('lck-manager-roster',JSON.stringify(roster))
   window.dispatchEvent(new Event('lck-roster-updated'))
 }
-type Staff = {id:string;name:string;realName?:string;birthDate?:string;role:string;rating:number;salary:number;focus:string;sourceNote?:string}
+export type Staff = {id:string;name:string;realName?:string;birthDate?:string;role:string;rating:number;salary:number;focus:string;sourceNote?:string;age?:number|null}
 type Career = {
   budget:number; initialBudget:number; week:number; morale:number; training:string
   sponsorIncome:number; sponsorName:string; transferSpent:number; wageSpent:number
@@ -61,6 +61,12 @@ const readCareer=(club:ClubData):Career=>{
 const save=(key:string,value:unknown)=>localStorage.setItem(key,JSON.stringify(value))
 const money=(n:number)=>'₩'+n.toFixed(1).replace(/\.0$/,'')+'억'
 const overall=(p:PlayerData)=>Math.round((p.lane*.22+p.mechanics*.22+p.macro*.20+p.teamfight*.20+p.consistency*.10+p.clutch*.06))
+
+export function readClubStaff(short:string,currentDate:string):Staff[] {
+  const team=seasonClubs.find(item=>item.short===short)
+  if(!team) return []
+  return readCareer(team).staff.map(member=>({...member,age:ageAtDate(member.birthDate,currentDate)}))
+}
 
 export function applyMatchResult(club:Club,won:boolean,opponent:string) {
   const data=seasonClubs.find(team=>team.short===club.short)
