@@ -244,7 +244,7 @@ function App() {
       <header className="topbar"><div><span className="season">2026 {phaseLabel(seasonPhase)}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><span className="spacebar-hint">SPACE 계속하기</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{nextMatch ? '다음 경기일까지 →' : '다음 일정까지 →'}</button></div></header>
       <section className="content">{saveMessage && <div className="save-toast">{saveMessage}</div>}
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
-        : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short} onOpenMarket={()=>setActive('이적시장')}/>
+        : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short} currentDate={dateKey(gameDate)} onOpenMarket={()=>setActive('이적시장')}/>
        
         
         : active==='전술 및 밴픽' ? <Tactics teamName={club.short}/>
