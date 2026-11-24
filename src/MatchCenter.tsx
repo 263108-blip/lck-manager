@@ -94,7 +94,7 @@ function randomEnemyDraft(catalog: ChampionData[], banned: string[], ourPicks: R
   return result
 }
 
-function saveGameStats(state: MatchState, matchId: number, gameNumber: number, blueWinner: boolean) {
+function saveGameStats(state: MatchState, matchId: number, gameNumber: number, blueWinner: boolean, catalog: ChampionData[]) {
   const historyKey = 'lck-player-match-history-2026'
   const seasonKey = 'lck-player-season-stats-2026'
   const championKey = 'lck-player-champion-stats-2026'
@@ -134,6 +134,31 @@ function saveGameStats(state: MatchState, matchId: number, gameNumber: number, b
         assists: previousChampion.assists + player.assists,
       }
       champions[playerKey] = playerChampions
+
+      // Champion mastery grows only when the player actually uses the champion in a completed match.
+      const rosterKey = 'lck-manager-roster-' + team
+      const savedRoster = JSON.parse(localStorage.getItem(rosterKey) || '[]') as Player[]
+      const rosterPlayer = savedRoster.find(entry => (player.id && entry.id === player.id) || entry.name === player.name)
+      if (rosterPlayer) {
+        const selectedChampion = catalog.find(item => item.id === player.championId)
+        if (selectedChampion) {
+          const current = (rosterPlayer.champions ?? []).map(entry =>
+            typeof entry === 'string' ? { name: entry, mastery: 0 } : { ...entry, mastery: entry.mastery ?? 0 },
+          )
+          const found = current.find(entry => entry.name === selectedChampion.name || entry.name === selectedChampion.id)
+          const gain = 0.7 + Math.min(0.9, (player.kills + player.assists * 0.35 + player.cs / 80) / 30) + (won ? 0.25 : 0)
+          if (found) found.mastery = Math.min(100, Math.round((found.mastery + gain) * 10) / 10)
+          else current.push({ name: selectedChampion.name, mastery: Math.round(gain * 10) / 10 })
+          rosterPlayer.champions = current
+          localStorage.setItem(rosterKey, JSON.stringify(savedRoster))
+          try {
+            const active = JSON.parse(localStorage.getItem('lck-manager-selected-club') || 'null')
+            if (active?.short === team) localStorage.setItem('lck-manager-roster', JSON.stringify(savedRoster))
+          } catch {
+            // The team-specific roster remains saved even when no active club is selected.
+          }
+        }
+      }
     }
     history.unshift({
       gameKey,
@@ -153,6 +178,7 @@ function saveGameStats(state: MatchState, matchId: number, gameNumber: number, b
     localStorage.setItem(seasonKey, JSON.stringify(season))
     localStorage.setItem(championKey, JSON.stringify(champions))
     window.dispatchEvent(new Event('lck-player-stats-updated'))
+    window.dispatchEvent(new Event('lck-roster-updated'))
   } catch {
     // Match results still remain visible if browser storage is temporarily unavailable.
   }
@@ -277,7 +303,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
     if (stage !== 'game' || !gameState?.over || handledGame.current) return
     handledGame.current = true
     const blueWon = gameState.winner === 'blue'
-    saveGameStats(gameState, match.id, gameNumber, blueWon)
+    saveGameStats(gameState, match.id, gameNumber, blueWon, catalog)
     const nextBlue = blueSeriesWins + (blueWon ? 1 : 0)
     const nextRed = redSeriesWins + (blueWon ? 0 : 1)
     setBlueSeriesWins(nextBlue)
