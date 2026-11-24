@@ -6,7 +6,9 @@ type ChampionMastery = {
   name: string
   mastery: number
 }
-type SeasonStats = { matches:number; wins:number; losses:number; kills:number; deaths:number; assists:number; mvp:number }
+type SeasonStats = { matches:number; wins:number; losses:number; kills:number; deaths:number; assists:number; mvp:number; cs?:number }
+type MatchHistoryEntry = { id?:string; name:string; role:string; team:string; championId:string; championName?:string; kills:number; deaths:number; assists:number; cs:number; won:boolean }
+type MatchHistory = { gameKey:string; matchId:number; gameNumber:number; blue:string; red:string; winner:string; players:MatchHistoryEntry[] }
 type Player = {
   id?: string
   name: string
@@ -75,6 +77,7 @@ function loadRoster(teamShort: string): Player[] {
 export default function Roster({ teamName = 'T1', teamShort = 'T1', onOpenMarket }: { teamName?: string; teamShort?: string; onOpenMarket?: () => void }) {
   const [roster, setRoster] = useState<Player[]>(() => loadRoster(teamShort))
   const [seasonStats,setSeasonStats] = useState<Record<string,SeasonStats>>(()=>{try{return JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}')}catch{return {}}})
+  const [matchHistory,setMatchHistory] = useState<MatchHistory[]>(()=>{try{return JSON.parse(localStorage.getItem('lck-player-match-history-2026')||'[]')}catch{return []}})
   const [role, setRole] = useState('전체')
   const [selectedName, setSelectedName] = useState('Zeus')
 const [renewYears,setRenewYears] = useState(1)
@@ -88,7 +91,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  const refreshStats=()=>{try{setSeasonStats(JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}'))}catch{setSeasonStats({})}}
+  const refreshStats=()=>{try{setSeasonStats(JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}'));setMatchHistory(JSON.parse(localStorage.getItem('lck-player-match-history-2026')||'[]'))}catch{setSeasonStats({});setMatchHistory([])}}
   window.addEventListener('lck-player-stats-updated',refreshStats)
   window.addEventListener('storage',refreshStats)
   return ()=>{window.removeEventListener('lck-player-stats-updated',refreshStats);window.removeEventListener('storage',refreshStats)}
@@ -186,6 +189,7 @@ function changeStatus() {
 
 const selected =
   roster.find(p => p.name === selectedName) || roster[0] || null
+const recentMatches = selected ? matchHistory.filter(match => match.players?.some(player => (selected.id && player.id===selected.id) || player.name===selected.name)).slice(0,5) : []
   return (
     <div className="roster-page">
       <div className="roster-title">
@@ -266,7 +270,22 @@ const selected =
             <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span><span>사기 <b>{selected.morale ?? 76}/100</b></span></div>
 
             <h3>2026 시즌 기록</h3>
-            <div className="player-contract-strip"><span>출전 <b>{seasonStats[selected.name]?.matches??0}회</b></span><span>승리 <b>{seasonStats[selected.name]?.wins??0}회</b></span><span>K / D / A <b>{seasonStats[selected.name]?.kills??0} / {seasonStats[selected.name]?.deaths??0} / {seasonStats[selected.name]?.assists??0}</b></span><span>MVP <b>{seasonStats[selected.name]?.mvp??0}회</b></span></div>
+            <div className="player-contract-strip"><span>출전 <b>{seasonStats[selected.name]?.matches??0}회</b></span><span>승리 <b>{seasonStats[selected.name]?.wins??0}회</b></span><span>CS <b>{seasonStats[selected.name]?.cs??0}</b></span><span>K / D / A <b>{seasonStats[selected.name]?.kills??0} / {seasonStats[selected.name]?.deaths??0} / {seasonStats[selected.name]?.assists??0}</b></span><span>MVP <b>{seasonStats[selected.name]?.mvp??0}회</b></span></div>
+
+            <h3>최근 경기 기록</h3>
+            <div className="player-recent-matches">
+              {recentMatches.length ? recentMatches.map(match => {
+                const performance=match.players.find(player => (selected.id && player.id===selected.id) || player.name===selected.name)
+                if (!performance) return null
+                const opponent=match.blue===selected.team ? match.red : match.blue
+                return <div className="player-recent-match" key={match.gameKey}>
+                  <div><span>{match.gameNumber}세트 · {opponent}전</span><b className={performance.won?'win':'loss'}>{performance.won?'승':'패'}</b></div>
+                  <strong>{performance.championName || performance.championId || '챔피언 미상'}</strong>
+                  <span>K/D/A <b>{performance.kills}/{performance.deaths}/{performance.assists}</b></span>
+                  <span>CS <b>{performance.cs}</b></span>
+                </div>
+              }) : <p className="player-record-empty">아직 저장된 경기 기록이 없습니다. 경기를 완료하면 최근 기록이 여기에 표시됩니다.</p>}
+            </div>
 
             <h3>선수 능력치</h3>
 
