@@ -5,20 +5,20 @@ import Schedule from './Schedule'
 import LeagueTable from './LeagueTable'
 import { useLeagueMatches, buildStandings, saveMatches, type Match } from './matchData'
 import MatchCenter from './MatchCenter'
-import Tactics from './Tactics'
+import Tactics from './Tactics'\nimport Playoffs from './Playoffs'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, seedRosterForClub, type Club } from './ClubManager'
 
-const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록']
+const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','플레이오프']
 function dateFromDay(day:number) { return new Date(2026,10,23+day) }
 function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
 function getSeasonPhase(day:number,matches:Match[]) {
   const today=dateKey(dateFromDay(day))
   if(today<'2027-01-13') return 'PRESEASON'
-  if(matches.length>0 && matches.every(match=>match.status==='종료')) return 'OFFSEASON'
+  if(matches.length>0 && matches.every(match=>match.status==='종료')) return localStorage.getItem('lck-manager-playoffs-2027') ? 'PLAYOFFS' : 'PLAYOFFS'
   return 'REGULAR SEASON'
 }
 function phaseLabel(phase:string) {
-  return phase==='PRESEASON'?'프리시즌':phase==='REGULAR SEASON'?'정규 시즌':'시즌 종료'
+  return phase==='PRESEASON'?'프리시즌':phase==='REGULAR SEASON'?'정규 시즌':phase==='PLAYOFFS'?'플레이오프':'시즌 종료'
 }
 
 function readClub(): Club | null {
@@ -170,7 +170,7 @@ function App() {
     <aside className="sidebar">
       <div className="logo"><span className="logo-icon">L</span><div><h2>LCK MANAGER</h2><small>ESPORTS MANAGEMENT</small></div></div>
       <div className="manager-label">MANAGEMENT</div>
-      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣'][index]}</span>{menu}</button>)}</nav>
+      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','🏆'][index]}</span>{menu}</button>)}</nav>
       <div className="sidebar-bottom"><div className="team-mini" style={{background:club.color}}>{club.short.slice(0,3)}</div><div><strong>{club.name}</strong><small>감독 커리어 · 2027</small></div></div>
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
@@ -183,7 +183,7 @@ function App() {
         
         : active==='전술 및 밴픽' ? <Tactics teamName={club.short}/>
         : active==='경기 일정' ? <Schedule teamName={club.short} onStartMatch={m=>setActiveMatch(m)}/>
-        : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
+         : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>\n        : active==='플레이오프' ? <Playoffs standings={standings} myTeam={club.short}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive}/>
         : <div className="fm-dashboard">
           <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 운영하세요. 현재 단계: {phaseLabel(seasonPhase)}</p></div><div className="fm-season"><span>2027 SEASON</span><strong>{phaseLabel(seasonPhase)}</strong><small>{seasonPhase==='PRESEASON'?'정규 시즌 개막까지 준비 중':seasonPhase==='REGULAR SEASON'?'정규 시즌 진행 중':'정규 시즌 종료 · 다음 시즌 준비'}</small></div></div>
