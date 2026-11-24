@@ -15,7 +15,10 @@ function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+
 function getSeasonPhase(day:number,matches:Match[]) {
   const today=dateKey(dateFromDay(day))
   if(today<'2027-01-13') return 'PRESEASON'
-  if(matches.length>0 && matches.every(match=>match.status==='종료')) {\n    try { if(JSON.parse(localStorage.getItem('lck-manager-playoffs-2027')||'null')?.champion) return 'OFFSEASON' } catch {}\n    return 'PLAYOFFS'\n  }
+  if(matches.length>0 && matches.every(match=>match.status==='종료')) {
+    try { if(JSON.parse(localStorage.getItem('lck-manager-playoffs-2027')||'null')?.champion) return 'OFFSEASON' } catch {}
+    return 'PLAYOFFS'
+  }
   return 'REGULAR SEASON'
 }
 function phaseLabel(phase:string) {
