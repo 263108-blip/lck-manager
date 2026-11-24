@@ -88,6 +88,13 @@ useEffect(() => {
 }, [roster, teamShort])
 
 
+useEffect(() => {
+  const refreshStats=()=>{try{setSeasonStats(JSON.parse(localStorage.getItem('lck-player-season-stats-2027')||'{}'))}catch{setSeasonStats({})}}
+  window.addEventListener('lck-player-stats-updated',refreshStats)
+  window.addEventListener('storage',refreshStats)
+  return ()=>{window.removeEventListener('lck-player-stats-updated',refreshStats);window.removeEventListener('storage',refreshStats)}
+},[])
+
 const roleOrder = ['TOP', 'JNG', 'MID', 'ADC', 'SUP']
 
 const starters = roster
