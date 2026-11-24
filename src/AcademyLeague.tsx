@@ -121,12 +121,12 @@ function simulate(match:Match):Match {
   }
   return {...match,homeScore:home,awayScore:away,winner:home>away?match.home:match.away,status:'종료'}
 }
-function rowsFor(state:Save,ids:string[],carry:boolean):Row[] {
+function rowsFor(state:Save,ids:string[]):Row[] {
   const table=new Map<string,Row>()
   ids.forEach(id=>table.set(id,{id,played:0,wins:0,losses:0,setsFor:0,setsAgainst:0,setDiff:0,points:0}))
   state.matches.forEach(match=>{
     if(match.status!=='종료')return
-    const belongs = match.stage==='R1-2' ? carry && ids.includes(match.home) && ids.includes(match.away) : match.stage==='R3-4' && ids.includes(match.home) && ids.includes(match.away)
+    const belongs = (match.stage==='R1-2' || match.stage==='R3-4') && ids.includes(match.home) && ids.includes(match.away)
     if(!belongs)return
     const home=table.get(match.home),away=table.get(match.away)
     if(!home||!away)return
@@ -155,7 +155,7 @@ function afterPlayin(challenge:string[],winners:string[]):Match[] {
 }
 function transition(state:Save):Save {
   if(state.stage==='R1-2'&&state.matches.filter(match=>match.stage==='R1-2').every(match=>match.status==='종료')){
-    const ranking=rowsFor(state,academyTeams.map(team=>team.id),false)
+    const ranking=rowsFor(state,academyTeams.map(team=>team.id))
     const challenge=ranking.slice(0,5).map(row=>row.id)
     const trial=ranking.slice(5).map(row=>row.id)
     return {...state,stage:'R3-4',challenge,trial,matches:[...state.matches,...roundsFor(challenge,'CL-R34-C','R3-4','2026-07-01','CHALLENGE'),...roundsFor(trial,'CL-R34-T','R3-4','2026-07-01','TRIAL')],history:['R1~2 종료 · Challenge Group과 Trial Group 편성 완료',...state.history]}
@@ -211,9 +211,9 @@ export default function AcademyLeague({teamShort}:{teamShort:string}){
   const [selected,setSelected]=useState(teamShort)
   const team=academyTeams.find(item=>item.short===selected) ?? academyTeams[0]
   const allIds=academyTeams.map(item=>item.id)
-  const allRows=useMemo(()=>rowsFor(state,allIds,false),[state])
-  const challengeRows=useMemo(()=>rowsFor(state,state.challenge,true),[state])
-  const trialRows=useMemo(()=>rowsFor(state,state.trial,true),[state])
+  const allRows=useMemo(()=>rowsFor(state,allIds),[state])
+  const challengeRows=useMemo(()=>rowsFor(state,state.challenge),[state])
+  const trialRows=useMemo(()=>rowsFor(state,state.trial),[state])
   const pending=state.matches.filter(match=>match.stage===state.stage&&match.status==='예정')
   const nextDate=pending.map(match=>match.date).sort()[0]
   const currentMatches=state.matches.filter(match=>match.stage===state.stage)
