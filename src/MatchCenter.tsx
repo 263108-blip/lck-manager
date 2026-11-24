@@ -22,7 +22,6 @@ type Props = {
   onExit: () => void
 }
 type DraftMode = 'ban' | 'pick'
-type Side = 'blue' | 'red'
 const roles: Role[] = ['TOP', 'JNG', 'MID', 'ADC', 'SUP']
 const ROLE_LABEL: Record<Role, string> = { TOP: '탑', JNG: '정글', MID: '미드', ADC: '원딜', SUP: '서포터' }
 const ROLE_HINTS: Record<Role, string[]> = {
