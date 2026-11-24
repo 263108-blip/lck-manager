@@ -9,10 +9,11 @@ import Tactics from './Tactics'
 import Playoffs from './Playoffs'
 import AcademyLeague from './AcademyLeague'
 import SeasonCalendar from './SeasonCalendar'
+import SeasonAwards from './SeasonAwards'
 import { getCurrentSeasonEvent, getNextSeasonEvent, getSeasonPhase } from './seasonEvents'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, readClubStaff, seedRosterForClub, type Club } from './ClubManager'
 
-const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프','시즌 캘린더']
+const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프','시즌 캘린더','시상식 · 명예의 전당']
 function dateFromDay(day:number) { return new Date(2025,10,23+day) }
 function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
 function phaseLabel(phase:string) {
@@ -236,7 +237,7 @@ function App() {
     <aside className="sidebar">
       <div className="logo"><span className="logo-icon">L</span><div><h2>LCK MANAGER</h2><small>ESPORTS MANAGEMENT</small></div></div>
       <div className="manager-label">MANAGEMENT</div>
-      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','♙','🏆','▤'][index]}</span>{menu}</button>)}</nav>
+      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','♙','🏆','▤','🏅'][index]}</span>{menu}</button>)}</nav>
       <div className="sidebar-bottom"><div className="team-mini" style={{background:club.color}}>{club.short.slice(0,3)}</div><div><strong>{club.name}</strong><small>감독 커리어 · 2026</small></div></div>
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
@@ -253,6 +254,7 @@ function App() {
         : active==='2군 · LCK CL' ? <AcademyLeague teamShort={club.short}/>
         : active==='플레이오프' ? <Playoffs standings={standings} myTeam={club.short} ready={playoffsReady}/>
         : active==='시즌 캘린더' ? <SeasonCalendar currentDate={dateKey(gameDate)}/>
+        : active==='시상식 · 명예의 전당' ? <SeasonAwards currentDate={dateKey(gameDate)}/>
         : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive} currentDate={dateKey(gameDate)}/>
         : <div className="fm-dashboard-v2">
           <header className="fm-dash-heading">
