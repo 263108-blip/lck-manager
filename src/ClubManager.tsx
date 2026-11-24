@@ -195,8 +195,8 @@ export function ClubSelection({onSelect}:{onSelect:(club:Club)=>void}) {
     <div className="career-start-hero">
       <div className="career-start-kicker">LCK MANAGER · CAREER MODE · 2026</div>
       <h1>당신의 팀을 선택하세요.</h1>
-      <p>2026 월드 챔피언십 이후, 2026 시즌을 앞둔 LCK 프리시즌에서 새로운 역사를 만드세요.</p>
-      <div className="career-start-meta"><span>10 CLUBS</span><i/> <span>2026.11.23 START DATE</span><i/> <span>TRANSFER WINDOW OPEN</span></div>
+      <p>2025 월드 챔피언십 이후, 2026 시즌을 앞둔 LCK 프리시즌에서 새로운 역사를 만드세요.</p>
+      <div className="career-start-meta"><span>10 CLUBS</span><i/> <span>2025.11.23 START DATE</span><i/> <span>TRANSFER WINDOW OPEN</span></div>
     </div>
     <div className="career-start-layout">
       <section className="career-club-picker">
@@ -212,7 +212,7 @@ export function ClubSelection({onSelect}:{onSelect:(club:Club)=>void}) {
         <div className="career-preview-roster"><small>CONFIRMED / CONTRACTED</small>{data.players.length?data.players.map(p=><div key={p.id}><span>{p.role}</span><strong>{p.name}</strong><b>{p.overall}</b></div>):<p>현재 공개된 2026 선수단 계약이 없어 리빌딩부터 시작합니다.</p>}</div>
         <button className="career-start-button" onClick={()=>onSelect(selected)}>이 구단으로 커리어 시작 <span>→</span></button>
         <button className="career-data-note" onClick={()=>setShowInfo(v=>!v)}>{showInfo?'데이터 안내 닫기':'선수 능력치·재정 데이터 안내'}</button>
-        {showInfo&&<p className="career-data-disclaimer">선수단 이동은 2026년 11월 23일까지 확인된 공개 발표와 보도 기준입니다. 능력치·연봉·이적 가치는 실제 공식 수치가 공개되지 않아 최근 경기력에 기반한 게임 밸런스용 추정치입니다. 미확정 영입설은 확정 로스터에 넣지 않았습니다.</p>}
+        {showInfo&&<p className="career-data-disclaimer">선수단은 2026 LCK Round 3–4 공개 로스터를 기준으로 구성했습니다. OVR·잠재력·연봉·시장 가치는 공식 수치가 아닌 게임 밸런스용 추정치이며, 미확정 이적설은 확정 선수단에 섞지 않았습니다.</p>}
       </aside>
     </div>
   </div>
