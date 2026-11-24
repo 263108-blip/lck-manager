@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { academyRosterNote, academyTeams, type AcademyTeam } from './academyData'
+import { academyRosterNote, academyTeams } from './academyData'
 import './AcademyLeague.css'
 
 type Stage = 'R1-2' | 'R3-4' | 'PLAYIN' | 'PLAYOFFS' | 'OFFSEASON'
@@ -37,7 +37,6 @@ const labels: Record<Stage,string> = {
   OFFSEASON:'시즌 종료',
 }
 const teamMap = new Map(academyTeams.map(team => [team.id,team]))
-const teamId = (short:string) => academyTeams.find(team => team.short===short)?.id ?? academyTeams[0].id
 function dateKey(date:Date):string {
   return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0')
 }
@@ -127,7 +126,7 @@ function rowsFor(state:Save,ids:string[],carry:boolean):Row[] {
   ids.forEach(id=>table.set(id,{id,played:0,wins:0,losses:0,setsFor:0,setsAgainst:0,setDiff:0,points:0}))
   state.matches.forEach(match=>{
     if(match.status!=='종료')return
-    const belongs = match.stage==='R1-2' ? carry : match.stage==='R3-4' && ids.includes(match.home) && ids.includes(match.away)
+    const belongs = match.stage==='R1-2' ? carry && ids.includes(match.home) && ids.includes(match.away) : match.stage==='R3-4' && ids.includes(match.home) && ids.includes(match.away)
     if(!belongs)return
     const home=table.get(match.home),away=table.get(match.away)
     if(!home||!away)return
