@@ -6,7 +6,8 @@ type ChampionMastery = {
   name: string
   mastery: number
 }
-type SeasonStats = { matches:number; wins:number; losses:number; kills:number; deaths:number; assists:number; mvp:number }\ntype Player = {
+type SeasonStats = { matches:number; wins:number; losses:number; kills:number; deaths:number; assists:number; mvp:number }
+type Player = {
   id?: string
   name: string
   role: string
