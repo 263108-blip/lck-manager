@@ -41,11 +41,11 @@ function resolveTeam(value:string,series:Series[]):string {
   const id=value.slice(4).toLowerCase()
   return series.find(item=>item.id.toLowerCase()===id)?.winner ?? ''
 }
-export default function Playoffs({standings,myTeam}:{standings:Standing[];myTeam:string}){
-  const [save,setSave]=useState<Save>(()=>{try{const raw=localStorage.getItem(KEY);if(!raw)return freshSave(standings);const parsed=JSON.parse(raw) as Save;return parsed.version===2?parsed:freshSave(standings)}catch{return freshSave(standings)}})
+export default function Playoffs({standings,myTeam,ready=false}:{standings:Standing[];myTeam:string;ready?:boolean}){
+  const [save,setSave]=useState<Save>(()=>{try{const raw=localStorage.getItem(KEY);if(!raw)return ready?freshSave(standings):{version:2,season:2026,series:[]};const parsed=JSON.parse(raw) as Save;return parsed.version===2?parsed:(ready?freshSave(standings):{version:2,season:2026,series:[]})}catch{return ready?freshSave(standings):{version:2,season:2026,series:[]}}})
   useEffect(()=>{
-    if(!save.series.length&&standings.some(team=>team.group==='LEGEND'))setSave(freshSave(standings))
-  },[standings,save.series.length])
+    if(ready&&!save.series.length&&standings.some(team=>team.group==='LEGEND'))setSave(freshSave(standings))
+  },[standings,save.series.length,ready])
   useEffect(()=>{localStorage.setItem(KEY,JSON.stringify(save))},[save])
   const resolved=useMemo(()=>save.series.map(item=>({...item,home:resolveTeam(item.home,save.series)||'진출팀 대기',away:resolveTeam(item.away,save.series)||'진출팀 대기'})),[save.series])
   const champion=save.champion
@@ -73,6 +73,7 @@ export default function Playoffs({standings,myTeam}:{standings:Standing[];myTeam
     })
   }
   function reset(){
+    if(!ready){return}
     if(!window.confirm('2026 LCK 플레이오프 결과를 초기화할까요?'))return
     setSave(freshSave(standings))
   }
