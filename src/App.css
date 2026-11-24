@@ -609,3 +609,5 @@ input, select, textarea {
 .playoffs-series.waiting>span{display:block;padding:7px 0;color:#8da0b4;font-size:8px}
 .playoffs-waiting{padding:24px;text-align:center;border:1px dashed #3a4f65;border-radius:5px;background:#141f2d;color:#95a8bb;font-size:10px}
 @media(max-width:700px){.playoffs-seeding-grid,.playoffs-choice-panel{grid-template-columns:1fr}}
+
+.edit-actions .retire-player-btn{border-color:#796641;background:#302918;color:#e2cc93}.edit-actions .retire-player-btn:hover{border-color:#ad925c;background:#3d321c}
