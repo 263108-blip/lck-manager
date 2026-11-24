@@ -15,11 +15,11 @@ function LeagueTable({ standings, myTeam = 'T1' }: Props) {
         <div>
           <span>LCK · LEAGUE TABLE</span>
           <h1>리그 순위</h1>
-          <p>2027 시즌 경기 결과에 따라 갱신되는 구단별 순위입니다.</p>
+          <p>2026 시즌 경기 결과에 따라 갱신되는 구단별 순위입니다.</p>
         </div>
         <div className="league-season">
           <span>SEASON</span>
-          <strong>2027</strong>
+          <strong>2026</strong>
           <small>REGULAR SEASON</small>
         </div>
       </div>
@@ -42,10 +42,10 @@ function LeagueTable({ standings, myTeam = 'T1' }: Props) {
       <section className="league-table-panel">
         <div className="league-panel-heading">
           <div>
-            <span>2027 REGULAR SEASON</span>
+            <span>2026 REGULAR SEASON</span>
             <h2>팀 순위표</h2>
           </div>
-          <span>2027 SEASON</span>
+          <span>2026 SEASON</span>
         </div>
 
         <div className="league-table-scroll">
