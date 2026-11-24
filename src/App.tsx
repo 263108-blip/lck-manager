@@ -8,22 +8,31 @@ import MatchCenter from './MatchCenter'
 import Tactics from './Tactics'
 import Playoffs from './Playoffs'
 import AcademyLeague from './AcademyLeague'
+import SeasonCalendar from './SeasonCalendar'
+import { getCurrentSeasonEvent, getNextSeasonEvent, getSeasonPhase } from './seasonEvents'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, readClubStaff, seedRosterForClub, type Club } from './ClubManager'
 
-const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프']
+const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프','시즌 캘린더']
 function dateFromDay(day:number) { return new Date(2025,10,23+day) }
 function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
-function getSeasonPhase(day:number,matches:Match[]) {
-  const today=dateKey(dateFromDay(day))
-  if(today<'2026-01-14') return 'PRESEASON'
-  if(matches.length>0 && matches.every(match=>match.status==='종료')) {
-    try { if(JSON.parse(localStorage.getItem('lck-manager-playoffs-2026')||'null')?.champion) return 'OFFSEASON' } catch {}
-    return 'PLAYOFFS'
-  }
-  return 'REGULAR SEASON'
-}
 function phaseLabel(phase:string) {
-  return phase==='PRESEASON'?'프리시즌':phase==='REGULAR SEASON'?'정규 시즌':phase==='PLAYOFFS'?'플레이오프':'시즌 종료'
+  const labels:Record<string,string> = {
+    PRESEASON:'프리시즌',
+    SPLIT_1:'LCK Split 1',
+    FIRST_STAND:'First Stand',
+    BREAK:'시즌 전환기',
+    REGULAR_R1_2:'정규 시즌 R1~2',
+    ROAD_TO_MSI:'Road to MSI',
+    MSI_PREP:'MSI 준비',
+    MSI:'Mid-Season Invitational',
+    SUMMER_BREAK:'하계 전환기',
+    REGULAR_R3_4:'정규 시즌 R3~4',
+    PLAY_IN:'플레이-인',
+    PLAYOFFS:'플레이오프',
+    WORLDS:'월드 챔피언십',
+    OFFSEASON:'오프시즌',
+  }
+  return labels[phase] ?? phase
 }
 
 function readClub(): Club | null {
@@ -124,7 +133,9 @@ function App() {
   const nextMatch = matches.filter(m=>m.status==='예정'&&(m.home===club?.short||m.away===club?.short)).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0]
   const opponent = nextMatch ? (nextMatch.home===club?.short?nextMatch.away:nextMatch.home) : null
   const gameDate = dateFromDay(day)
-  const seasonPhase = getSeasonPhase(day,matches)
+  const seasonPhase = getSeasonPhase(dateKey(gameDate))
+  const currentEvent = getCurrentSeasonEvent(dateKey(gameDate))
+  const nextSeasonEvent = getNextSeasonEvent(dateKey(gameDate))
   const displayDate = gameDate.toLocaleDateString('ko-KR',{month:'long',day:'numeric',weekday:'long'})
   const staffProfiles=readClubStaff(club?.short ?? '',dateKey(gameDate))
   const headCoach=staffProfiles.find(staff=>staff.role==='감독') ?? staffProfiles[0]
@@ -149,9 +160,13 @@ function App() {
       return
     }
 
-    let targetDay = day + 1
-    if (nextUserMatch) {
-      const [year, month, date] = nextUserMatch.date.split('-').map(Number)
+    const nextSeasonEvent = getNextSeasonEvent(currentDate)
+    const nextDate = [nextUserMatch?.date, nextSeasonEvent?.start]
+      .filter((value): value is string => Boolean(value))
+      .sort()[0]
+    let targetDay = day + 7
+    if (nextDate) {
+      const [year, month, date] = nextDate.split('-').map(Number)
       const target = new Date(year, month - 1, date)
       targetDay = Math.max(day + 1, Math.round((target.getTime() - dateFromDay(0).getTime()) / 86400000))
     }
@@ -183,6 +198,9 @@ function App() {
     saveMatches(progressed)
     if (nextUserMatch && nextUserMatch.date === dateKey(dateFromDay(targetDay))) {
       setSaveMessage(`${nextUserMatch.date} 경기일 도착 · 밴픽과 경기 준비를 진행하세요.`)
+    } else if (nextSeasonEvent && nextSeasonEvent.start === dateKey(dateFromDay(targetDay))) {
+      setSaveMessage(`${nextSeasonEvent.name} 시작일 도착 · 시즌 캘린더에서 대회 정보를 확인하세요.`)
+      setActive('시즌 캘린더')
     } else if (processedOtherMatches > 0) {
       setSaveMessage(`다음 일정까지 진행 · 다른 구단 ${processedOtherMatches}경기 결과 반영`)
     } else {
@@ -218,12 +236,12 @@ function App() {
     <aside className="sidebar">
       <div className="logo"><span className="logo-icon">L</span><div><h2>LCK MANAGER</h2><small>ESPORTS MANAGEMENT</small></div></div>
       <div className="manager-label">MANAGEMENT</div>
-      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','♙','🏆'][index]}</span>{menu}</button>)}</nav>
+      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','♙','🏆','▤'][index]}</span>{menu}</button>)}</nav>
       <div className="sidebar-bottom"><div className="team-mini" style={{background:club.color}}>{club.short.slice(0,3)}</div><div><strong>{club.name}</strong><small>감독 커리어 · 2026</small></div></div>
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
     <main className="main">
-      <header className="topbar"><div><span className="season">2026 {seasonPhase}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><span className="spacebar-hint">SPACE 계속하기</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{nextMatch ? '다음 경기일까지 →' : '다음 일정까지 →'}</button></div></header>
+      <header className="topbar"><div><span className="season">2026 {phaseLabel(seasonPhase)}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><span className="spacebar-hint">SPACE 계속하기</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{nextMatch ? '다음 경기일까지 →' : '다음 일정까지 →'}</button></div></header>
       <section className="content">{saveMessage && <div className="save-toast">{saveMessage}</div>}
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
         : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short} onOpenMarket={()=>setActive('이적시장')}/>
@@ -238,7 +256,7 @@ function App() {
         : <div className="fm-dashboard-v2">
           <header className="fm-dash-heading">
             <div><span>2026 LCK MANAGER · CAREER MODE</span><h1>구단 운영 센터</h1><p>{club.name} · {displayDate} · {phaseLabel(seasonPhase)}</p></div>
-            <div className="fm-dash-date"><small>시즌 진행</small><strong>{phaseLabel(seasonPhase)}</strong><span>{seasonPhase==='PRESEASON'?'프리시즌 준비':seasonPhase==='REGULAR SEASON'?'정규 시즌 진행':'포스트시즌 및 시즌 종료'}</span></div>
+            <div className="fm-dash-date"><small>현재 대회</small><strong>{currentEvent?.name ?? phaseLabel(seasonPhase)}</strong><span>{nextSeasonEvent ? '다음 일정 · '+nextSeasonEvent.name : '2026 시즌 캘린더'}</span></div>
           </header>
           <section className="fm-club-strip">
             <div className="fm-club-crest" style={{background:club.color}}>{club.short}</div>
