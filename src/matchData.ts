@@ -40,17 +40,20 @@ function buildSeasonFixtures():Match[] {
   }
   const fixtures:Match[]=[]
   let id=1
-  const start=new Date(2026,0,14)
+  const start=new Date(2026,3,1)
   for(let round=0;round<18;round++){
     const reverse=round>=9
     const games=firstHalf[round%9]
     games.forEach((game,index)=>{
       const date=new Date(start)
-      date.setDate(start.getDate()+round*7+Math.floor(index/3))
+      const week=Math.floor(round/2)
+      const slot=round%2
+      date.setDate(start.getDate()+week*7+index)
+      const time=slot===0?'17:00':'19:00'
       fixtures.push({
         id:id++,
         date:dateKey(date),
-        time:['14:00','17:00','19:00'][index%3],
+        time,
         home:reverse?game.away:game.home,
         away:reverse?game.home:game.away,
         status:'예정',
@@ -80,7 +83,7 @@ function buildGroupFixtures(ids:string[],group:Group):Match[]{
   const first:Match[]=[]
   rounds.forEach((games,round)=>games.forEach((pair,index)=>first.push({
     id:1000+(group==='LEGEND'?0:100)+(round*10)+index,
-    date:shiftDate('2026-07-29',round*3+Math.floor(index/2)),
+    date:shiftDate('2026-07-29',round*2+Math.floor(index/2)),
     time:index%2===0?'17:00':'19:00',
     home:pair[0],
     away:pair[1],
