@@ -597,3 +597,15 @@ input, select, textarea {
 @media(max-width:1000px){.roster-layout{grid-template-columns:230px minmax(0,1fr)}.player-recent-match{grid-template-columns:1fr 1fr 70px}.player-recent-match>span:last-child{display:none}}
 @media(max-width:760px){.roster-layout{grid-template-columns:1fr}.roster-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}.roster-list h2{grid-column:1/-1}.player-card{grid-template-columns:32px 1fr;padding:7px}.player-card>span:last-child{grid-column:2;text-align:left}.roster-summary{grid-template-columns:repeat(2,1fr)}.player-recent-match{grid-template-columns:1fr 1fr 70px}.player-recent-match>span:last-child{display:none}}
 @media(max-width:520px){.roster-title{align-items:flex-start;flex-direction:column}.player-detail{padding:10px}.player-recent-match{grid-template-columns:1fr 1fr}.player-recent-match>span:last-child{display:block}}
+
+.playoffs-seeding-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.playoffs-choice-panel{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:13px;border:1px solid #32475d;border-radius:5px;background:#141f2d}
+.playoffs-choice-panel>div{display:flex;flex-direction:column;gap:7px;min-width:0}
+.playoffs-choice-panel small{color:#70d8b8;font-size:8px;font-weight:900;letter-spacing:1px}
+.playoffs-choice-panel b{font-size:10px}
+.playoffs-choice-panel select{padding:9px 10px;border:1px solid #3a5068;border-radius:4px;background:#101a26;color:#e8edf5;font-size:9px}
+.playoffs-choice-panel button{padding:9px 10px;border:1px solid #63d2b1;border-radius:4px;background:#65d6b5;color:#09231b;font-size:9px;font-weight:900}
+.playoffs-series.waiting{opacity:.7;border-style:dashed}
+.playoffs-series.waiting>span{display:block;padding:7px 0;color:#8da0b4;font-size:8px}
+.playoffs-waiting{padding:24px;text-align:center;border:1px dashed #3a4f65;border-radius:5px;background:#141f2d;color:#95a8bb;font-size:10px}
+@media(max-width:700px){.playoffs-seeding-grid,.playoffs-choice-panel{grid-template-columns:1fr}}
