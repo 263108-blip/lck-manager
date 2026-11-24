@@ -30,11 +30,12 @@ export function saveClubRoster(short:string, roster:PlayerData[]) {
   window.dispatchEvent(new Event('lck-roster-updated'))
 }
 export type Staff = {id:string;name:string;realName?:string;birthDate?:string;role:string;rating:number;salary:number;focus:string;sourceNote?:string;age?:number|null}
+type RetiredPlayer = {id:string;name:string;role:string;team:string;age:number;overall:number;retiredDate:string;season:number;mvp:number}
 type Career = {
   budget:number; initialBudget:number; week:number; morale:number; training:string
   sponsorIncome:number; sponsorName:string; transferSpent:number; wageSpent:number
   scoutingBudget:number; scouted:string[]; staff:Staff[]; history:string[]
-  signedPlayers:string[]; releasedPlayers:string[]; listedPlayers:string[]; mediaReputation:number; pressure:number
+  signedPlayers:string[]; releasedPlayers:string[]; listedPlayers:string[]; retiredPlayers:RetiredPlayer[]; mediaReputation:number; pressure:number
 }
 const careerKey=(short:string)=>'lck-career-2026-'+short
 const baseStaff=(club:ClubData):Staff[]=>staffByTeam[club.short] ?? (club.coach==='미정' ? [] : [{id:'head-'+club.short,name:club.coach,realName:'',role:'감독',rating:club.reputation>=95?90:85,salary:0,focus:'팀 운영·밴픽'}])
@@ -42,7 +43,7 @@ const defaultCareer=(club:ClubData):Career=>({
   budget:club.budget,initialBudget:club.budget,week:1,morale:76,training:'균형 훈련',
   sponsorIncome:1.2,sponsorName:'기본 파트너',transferSpent:0,wageSpent:0,
   scoutingBudget:2,scouted:[],staff:baseStaff(club),history:['2026 시즌 LCK 커리어를 시작했습니다.'],
-  signedPlayers:[],releasedPlayers:[],listedPlayers:[],mediaReputation:50,pressure:35,
+  signedPlayers:[],releasedPlayers:[],listedPlayers:[],retiredPlayers:[],mediaReputation:50,pressure:35,
 })
 const readCareer=(club:ClubData):Career=>{
   const defaults=defaultCareer(club)
@@ -155,6 +156,35 @@ export function advanceCareerWeek(club:Club) {
   window.dispatchEvent(new Event('lck-career-updated'))
   return next
 }
+export function retirePlayerFromClub(short:string,playerId:string,currentDate='2026-11-14') {
+  const team=seasonClubs.find(item=>item.short===short)
+  if(!team)return null
+  const roster=readClubRoster(short)
+  const player=roster.find(item=>item.id===playerId||item.name===playerId)
+  if(!player)return null
+  const career=readCareer(team)
+  const stats:Record<string,{mvp?:number}> = (()=>{try{return JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}')}catch{return {}}})()
+  const mvp=stats[player.name]?.mvp??0
+  const retired:RetiredPlayer={id:player.id,name:player.name,role:player.role,team:short,age:player.age,overall:player.overall,retiredDate:currentDate,season:2026,mvp}
+  const retiredPlayers=[...(career.retiredPlayers??[]).filter(item=>item.id!==retired.id),retired]
+  const updatedRoster=roster.filter(item=>item.id!==player.id&&item.name!==player.name)
+  saveClubRoster(short,updatedRoster)
+  save(careerKey(short),{...career,retiredPlayers,listedPlayers:career.listedPlayers.filter(id=>id!==player.id),history:[player.name+' 선수 은퇴 · 선수단에서 은퇴 처리되었습니다.',...career.history].slice(0,100)})
+  let hallOfFameAdded=false
+  if(player.overall>=95||mvp>=3){
+    const hallKey='lck-manager-hall-of-fame-2026'
+    let hall:Array<RetiredPlayer & {inductedSeason:number}>=[]
+    try{hall=JSON.parse(localStorage.getItem(hallKey)||'[]')}catch{hall=[]}
+    if(!hall.some(item=>item.id===retired.id)){
+      hall.push({...retired,inductedSeason:2026})
+      localStorage.setItem(hallKey,JSON.stringify(hall))
+      hallOfFameAdded=true
+    }
+  }
+  window.dispatchEvent(new Event('lck-career-updated'))
+  return {player,roster:updatedRoster,hallOfFameAdded,retired}
+}
+
 export function releasePlayerFromClub(short:string,playerId:string) {
   const team=seasonClubs.find(c=>c.short===short)
   if(!team) return null
