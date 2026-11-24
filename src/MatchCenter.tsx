@@ -383,7 +383,6 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
   if (!gameState) return <div className="mc-loading">경기 데이터를 준비하고 있습니다…</div>
 
   const blueWon = gameState.winner === 'blue'
-  const dragonCounts = { blue: gameState.blue.dragons.length, red: gameState.red.dragons.length }
   const objectives = [
     { name: '드래곤', timer: gameState.dragonAvailable ? '처치 가능' : timeLabel(Math.max(0, gameState.nextDragonAt - gameState.seconds)), state: gameState.dragonAvailable ? 'LIVE' : `${gameState.blue.dragons.length} : ${gameState.red.dragons.length}` },
     { name: '공허 유충', timer: gameState.grubsResolved ? '처치 완료' : gameState.grubsAvailable ? '처치 가능' : timeLabel(Math.max(0, 480 - gameState.seconds)), state: `${gameState.blue.grubs} : ${gameState.red.grubs}` },
@@ -404,8 +403,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
     ADC: { blue: [17, 78], red: [83, 86] },
     SUP: { blue: [29, 72], red: [71, 28] },
   }
-  const structures = (team: MatchState['blue']) => LANES.map(lane => ({ lane, remaining: team.towersRemaining[lane], inhibitor: team.inhibitorsAlive[lane] }))
-  const LANES: Role[] = ['TOP', 'MID', 'ADC']
+  const LANES = ['TOP', 'MID', 'BOT'] as const
   const minionDots = Math.max(2, Math.min(7, gameState.minionWaves % 8))
   return (
     <div className="match-center mc-live-screen">
