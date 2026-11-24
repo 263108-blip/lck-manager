@@ -331,7 +331,6 @@ export function advanceMatch(state: MatchState): MatchState {
     // Baron and Herald buffs materially improve siege pressure.
     const sides: Side[] = ['blue', 'red']
     const attacker: Side = seededRandom(next) < clamp(0.5 + (bluePower - redPower) * 0.008, 0.2, 0.8) ? 'blue' : 'red'
-    const defender: Side = attacker === 'blue' ? 'red' : 'blue'
     const attackingTeam = next[attacker]
     const buffed = attackingTeam.baronBuffUntil > next.seconds || attackingTeam.herald
     const siegeChance = clamp(0.09 + minute * 0.003 + (buffed ? 0.2 : 0) + (attackingTeam.dragons.length * 0.012), 0.08, 0.56)
