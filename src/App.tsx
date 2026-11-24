@@ -7,9 +7,10 @@ import { useLeagueMatches, buildStandings, saveMatches, type Match } from './mat
 import MatchCenter from './MatchCenter'
 import Tactics from './Tactics'
 import Playoffs from './Playoffs'
+import AcademyLeague from './AcademyLeague'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, seedRosterForClub, type Club } from './ClubManager'
 
-const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','플레이오프']
+const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프']
 function dateFromDay(day:number) { return new Date(2026,0,1+day) }
 function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
 function getSeasonPhase(day:number,matches:Match[]) {
@@ -37,7 +38,7 @@ function createSnapshot() {
   const values:Record<string,string>={}
   for(let i=0;i<localStorage.length;i++){
     const key=localStorage.key(i)
-    if(key && key !== 'lck-manager-autosave' && (key.startsWith('lck-manager-') || key.startsWith('lck-career-'))) {
+    if(key && key !== 'lck-manager-autosave' && (key.startsWith('lck-manager-') || key.startsWith('lck-career-') || key.startsWith('lck-cl-'))) {
       const value=localStorage.getItem(key)
       if(value!==null) values[key]=value
     }
@@ -214,7 +215,7 @@ function App() {
     <aside className="sidebar">
       <div className="logo"><span className="logo-icon">L</span><div><h2>LCK MANAGER</h2><small>ESPORTS MANAGEMENT</small></div></div>
       <div className="manager-label">MANAGEMENT</div>
-      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','🏆'][index]}</span>{menu}</button>)}</nav>
+      <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','♙','🏆'][index]}</span>{menu}</button>)}</nav>
       <div className="sidebar-bottom"><div className="team-mini" style={{background:club.color}}>{club.short.slice(0,3)}</div><div><strong>{club.name}</strong><small>감독 커리어 · 2026</small></div></div>
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
