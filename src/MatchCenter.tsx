@@ -485,6 +485,37 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
                 <g fill="#d4c47c" stroke="#3a392a" strokeWidth=".6"><path d="M16 22l2-4 2 4z"/><path d="M50 50l2-4 2 4z"/><path d="M82 78l2-4 2 4z"/></g>
                 <g fill="#8dbb83" opacity=".25">{Array.from({ length: 28 }, (_, i) => <circle key={i} cx={(i * 29) % 97 + 1} cy={(i * 17) % 97 + 1} r="1.5"/>)}</g>
                 <g className="mc-map-objectives"><circle cx="74" cy="43" r="5" fill="#b67f4e" stroke="#f0d19a" strokeWidth=".8"/><text x="74" y="44" textAnchor="middle" fill="#fff" fontSize="2.5">DR</text><circle cx="28" cy="57" r="5" fill="#7655a0" stroke="#d9b5ff" strokeWidth=".8"/><text x="28" y="58" textAnchor="middle" fill="#fff" fontSize="2.5">VOID</text></g>
+                <g className="mc-jungle-camps">
+                  <g><circle cx="25" cy="31" r="2.4" fill="#3976a9" stroke="#92c8ed" strokeWidth=".6"/><text x="25" y="35" textAnchor="middle" fontSize="2.1" fill="#d6eaff">BLUE</text></g>
+                  <g><circle cx="37" cy="27" r="2.2" fill="#81946a" stroke="#c6d29b" strokeWidth=".6"/><text x="37" y="31" textAnchor="middle" fontSize="2.1" fill="#e1edca">WOLVES</text></g>
+                  <g><circle cx="43" cy="38" r="2.2" fill="#9b7651" stroke="#d6b18b" strokeWidth=".6"/><text x="43" y="42" textAnchor="middle" fontSize="2.1" fill="#f1dfc8">RAPTORS</text></g>
+                  <g><circle cx="27" cy="46" r="2.2" fill="#9d8059" stroke="#dec49c" strokeWidth=".6"/><text x="27" y="50" textAnchor="middle" fontSize="2.1" fill="#f0e2c6">GROMP</text></g>
+                  <g><circle cx="34" cy="64" r="2.4" fill="#9b3e43" stroke="#ed9ba0" strokeWidth=".6"/><text x="34" y="68" textAnchor="middle" fontSize="2.1" fill="#ffe1e3">RED</text></g>
+                  <g><circle cx="22" cy="68" r="2.2" fill="#8e7258" stroke="#d7b18a" strokeWidth=".6"/><text x="22" y="72" textAnchor="middle" fontSize="2.1" fill="#f0dfca">KRUGS</text></g>
+                  <g><circle cx="53" cy="49" r="2.4" fill="#c5ba70" stroke="#eee0a4" strokeWidth=".6"/><text x="53" y="54" textAnchor="middle" fontSize="2.1" fill="#fff2c7">SCUTTLE</text></g>
+                  <g><circle cx="75" cy="69" r="2.4" fill="#9b3e43" stroke="#ed9ba0" strokeWidth=".6"/><text x="75" y="73" textAnchor="middle" fontSize="2.1" fill="#ffe1e3">RED</text></g>
+                  <g><circle cx="63" cy="73" r="2.2" fill="#81946a" stroke="#c6d29b" strokeWidth=".6"/><text x="63" y="77" textAnchor="middle" fontSize="2.1" fill="#e1edca">WOLVES</text></g>
+                  <g><circle cx="58" cy="61" r="2.2" fill="#9b7651" stroke="#d6b18b" strokeWidth=".6"/><text x="58" y="65" textAnchor="middle" fontSize="2.1" fill="#f1dfc8">RAPTORS</text></g>
+                  <g><circle cx="73" cy="54" r="2.2" fill="#9d8059" stroke="#dec49c" strokeWidth=".6"/><text x="73" y="58" textAnchor="middle" fontSize="2.1" fill="#f0e2c6">GROMP</text></g>
+                  <g><circle cx="66" cy="35" r="2.2" fill="#8e7258" stroke="#d7b18a" strokeWidth=".6"/><text x="66" y="39" textAnchor="middle" fontSize="2.1" fill="#f0dfca">KRUGS</text></g>
+                  <g><circle cx="47" cy="51" r="2.4" fill="#c5ba70" stroke="#eee0a4" strokeWidth=".6"/><text x="47" y="56" textAnchor="middle" fontSize="2.1" fill="#fff2c7">SCUTTLE</text></g>
+                </g>
+                <g className="mc-map-structures">
+                  {(['TOP','MID','BOT'] as const).map((lane,index)=>{
+                    const bluePositions = index===0 ? [[13,80],[22,70],[31,59]] : index===1 ? [[17,84],[35,66],[53,48]] : [[20,91],[40,82],[60,73]]
+                    const redPositions = index===0 ? [[87,20],[78,30],[69,41]] : index===1 ? [[83,16],[65,34],[47,52]] : [[80,9],[60,18],[40,27]]
+                    return <g key={lane}>
+                      {bluePositions.map(([x,y],i)=><g key={'b-'+lane+'-'+i} opacity={i < gameState.blue.towersRemaining[lane] ? .95 : .2}><rect x={x-1.1} y={y-1.1} width="2.2" height="2.2" rx=".4" fill="#6fafe1" stroke="#d1ebff" strokeWidth=".45"/><circle cx={x} cy={y} r=".35" fill="#eff9ff"/></g>)}
+                      {redPositions.map(([x,y],i)=><g key={'r-'+lane+'-'+i} opacity={i < gameState.red.towersRemaining[lane] ? .95 : .2}><rect x={x-1.1} y={y-1.1} width="2.2" height="2.2" rx=".4" fill="#cb6674" stroke="#ffe0e3" strokeWidth=".45"/><circle cx={x} cy={y} r=".35" fill="#fff4f5"/></g>)}
+                      <text x={bluePositions[2][0]+3} y={bluePositions[2][1]} fontSize="1.9" fill="#c7e8ff">B-{lane}</text>
+                      <text x={redPositions[2][0]-3} y={redPositions[2][1]} textAnchor="end" fontSize="1.9" fill="#ffd4d9">R-{lane}</text>
+                    </g>
+                  })}
+                  <g opacity={gameState.blue.inhibitorsAlive.TOP||gameState.blue.inhibitorsAlive.MID||gameState.blue.inhibitorsAlive.BOT?1:.25}><path d="M10 87l2-2 2 2-2 2z" fill="#78b7e4" stroke="#e4f4ff" strokeWidth=".4"/><text x="12" y="84" textAnchor="middle" fontSize="2" fill="#d9eeff">INH</text></g>
+                  <g opacity={gameState.red.inhibitorsAlive.TOP||gameState.red.inhibitorsAlive.MID||gameState.red.inhibitorsAlive.BOT?1:.25}><path d="M88 13l2-2 2 2-2 2z" fill="#d87983" stroke="#ffedf0" strokeWidth=".4"/><text x="90" y="10" textAnchor="middle" fontSize="2" fill="#ffe1e4">INH</text></g>
+                  <text x="8" y="98" fontSize="2" fill="#d9efff">NEXUS {gameState.blue.nexusHealth}%</text>
+                  <text x="92" y="2" textAnchor="end" fontSize="2" fill="#ffe1e4">NEXUS {gameState.red.nexusHealth}%</text>
+                </g>
                 {LANES.map((lane, index) => <g key={lane} opacity=".7"><circle cx={index === 0 ? 30 : index === 1 ? 50 : 70} cy={index === 0 ? 24 : index === 1 ? 50 : 76} r="2.3" fill="#e1d2a1" stroke="#443c2e" strokeWidth=".7"/><text x={index === 0 ? 30 : index === 1 ? 50 : 70} y={index === 0 ? 27 : index === 1 ? 53 : 79} textAnchor="middle" fill="#f4edcf" fontSize="2.4">{lane}</text></g>)}
               </svg>
               <div className="mc-minion-wave blue-wave" style={{ left: '23%', top: '29%' }}>{Array.from({ length: minionDots }, (_, i) => <i key={i}/>)}</div>
