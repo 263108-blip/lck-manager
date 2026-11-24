@@ -59,7 +59,7 @@ function loadRoster(teamShort: string): Player[] {
           ...player,
           champions: (player.champions || []).map(champion =>
             typeof champion === 'string'
-              ? { name: champion, mastery: 70 }
+              ? { name: champion, mastery: 0 }
               : champion
           ),
         }))
@@ -74,11 +74,9 @@ function loadRoster(teamShort: string): Player[] {
 
 export default function Roster({ teamName = 'T1', teamShort = 'T1', onOpenMarket }: { teamName?: string; teamShort?: string; onOpenMarket?: () => void }) {
   const [roster, setRoster] = useState<Player[]>(() => loadRoster(teamShort))
-  const [seasonStats,setSeasonStats] = useState<Record<string,SeasonStats>>(()=>{try{return JSON.parse(localStorage.getItem('lck-player-season-stats-2027')||'{}')}catch{return {}}})
+  const [seasonStats,setSeasonStats] = useState<Record<string,SeasonStats>>(()=>{try{return JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}')}catch{return {}}})
   const [role, setRole] = useState('전체')
   const [selectedName, setSelectedName] = useState('Zeus')
-const [newChampion, setNewChampion] = useState('')
-const [newMastery, setNewMastery] = useState(70)
 const [renewYears,setRenewYears] = useState(1)
 useEffect(() => {
   try {
@@ -337,10 +335,10 @@ const selected =
             <h3>선수 정보</h3>
 
             <p>{selected.team} / {selected.role} / {selected.age}세 · 계약 {selected.contractUntil ?? '미정'}년까지</p>
-            <div className={`player-contract-status ${selected.contractStatus === '거피셜' ? 'rumored' : selected.contractStatus === '확정' ? 'confirmed' : ''}`}>{selected.contractStatus === '거피셜' ? '거피셜 · 보도 기반 합류 예상' : selected.contractStatus === '확정' ? '2027 로스터 확정' : selected.contractStatus === 'FA' ? '자유 계약 선수' : '계약 유지 또는 발표 대기'}</div>
+            <div className={`player-contract-status ${selected.contractStatus === '거피셜' ? 'rumored' : selected.contractStatus === '확정' ? 'confirmed' : ''}`}>{selected.contractStatus === '거피셜' ? '거피셜 · 보도 기반 합류 예상' : selected.contractStatus === '확정' ? '2026 로스터 확정' : selected.contractStatus === 'FA' ? '자유 계약 선수' : '계약 유지 또는 발표 대기'}</div>
             <div className="player-contract-strip"><span>연봉 <b>₩{(selected.salary ?? 0).toFixed(1)}억</b></span><span>시장 가치 <b>₩{(selected.value ?? 0).toFixed(1)}억</b></span><span>잠재력 <b>{selected.potential ?? '미평가'}</b></span><span>사기 <b>{selected.morale ?? 76}/100</b></span></div>
 
-            <h3>2027 시즌 기록</h3>
+            <h3>2026 시즌 기록</h3>
             <div className="player-contract-strip"><span>출전 <b>{seasonStats[selected.name]?.matches??0}회</b></span><span>승리 <b>{seasonStats[selected.name]?.wins??0}회</b></span><span>K / D / A <b>{seasonStats[selected.name]?.kills??0} / {seasonStats[selected.name]?.deaths??0} / {seasonStats[selected.name]?.assists??0}</b></span><span>MVP <b>{seasonStats[selected.name]?.mvp??0}회</b></span></div>
 
             <h3>선수 능력치</h3>
@@ -363,64 +361,20 @@ const selected =
             ))}
 
             <div className="champion-list">
-  <h3>주요 챔피언 및 숙련도</h3>
-
-  {selected.champions.map(champion => {
-    const name =
-      typeof champion === 'string' ? champion : champion.name
-
-    const mastery =
-      typeof champion === 'string' ? 70 : champion.mastery
-
-    return (
-      <div key={name} className="stat-row">
-        <strong>{name}</strong>
-
-        <input
-          type="number"
-          min="1"
-          max="100"
-          value={mastery}
-          onChange={e =>
-            updateChampionMastery(
-              name,
-              Math.min(100, Math.max(1, Number(e.target.value)))
-            )
-          }
-          style={{ width: '65px' }}
-        />
-
-        <span>/ 100</span>
-
-        <button onClick={() => removeChampion(name)}>
-          삭제
-        </button>
-      </div>
-    )
-  })}
-
-  <div className="champion-add">
-    <input
-      value={newChampion}
-      onChange={e => setNewChampion(e.target.value)}
-      placeholder="챔피언 이름"
-    />
-
-    <input
-      type="number"
-      min="1"
-      max="100"
-      value={newMastery}
-      onChange={e =>
-        setNewMastery(
-          Math.min(100, Math.max(1, Number(e.target.value)))
-        )
-      }
-    />
-
-    <button onClick={addChampion}>챔피언 추가</button>
-  </div>
-</div>
+              <h3>주요 챔피언 및 숙련도</h3>
+              <p className="champion-readonly-note">챔피언 숙련도는 선수별 경기 기록과 훈련 결과로만 관리됩니다.</p>
+              {selected.champions.map(champion => {
+                const name = typeof champion === 'string' ? champion : champion.name
+                const mastery = typeof champion === 'string' ? 0 : Math.round(champion.mastery ?? 0)
+                return (
+                  <div key={name} className="stat-row">
+                    <strong>{name}</strong>
+                    <span className="champion-mastery-value">{mastery > 0 ? `${mastery}/100` : '기록 없음'}</span>
+                    <span>{mastery > 0 ? '훈련으로 성장' : '훈련 필요'}</span>
+                  </div>
+                )
+              })}
+            </div>
 
             <div className="edit-actions">
               <button onClick={changeStatus}>{selected.status === '주전' ? '후보로 변경' : '주전으로 변경'}</button>
