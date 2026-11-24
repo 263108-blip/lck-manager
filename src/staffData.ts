@@ -53,7 +53,7 @@ export const staffByTeam: Record<string, StaffProfile[]> = {
     {id:'ns-staff-crazy',name:'Crazy',realName:'',role:'분석 코치',rating:85,salary:.7,focus:'상대 분석'},
   ],
   BRO: [
-    {id:'bro-staff-ssong',name:'Ssong',realName:'김상수',role:'감독',birthDate:'1989-10-05',rating:91,salary:1.3,focus:'밴픽 · 팀 운영',sourceNote:'생년월일 표기가 자료마다 달라 교차 확인 필요'},
+    {id:'bro-staff-ssong',name:'Ssong',realName:'김상수',role:'감독',rating:91,salary:1.3,focus:'밴픽 · 팀 운영',sourceNote:'생년월일 자료가 서로 달라 확인 불가'},
     {id:'bro-staff-duke',name:'Duke',realName:'이호성',role:'코치',birthDate:'1994-12-19',rating:90,salary:.9,focus:'탑 라인 · 경기 준비'},
   ],
   DN: [
