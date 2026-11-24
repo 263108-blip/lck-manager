@@ -172,7 +172,7 @@ function saveGameStats(state: MatchState, matchId: number, gameNumber: number, b
       blueGold: state.blue.gold,
       redGold: state.red.gold,
       winner: blueWinner ? state.blue.name : state.red.name,
-      players: allPlayers.map(entry => ({ ...entry.player, team: entry.team, won: entry.won })),
+      players: allPlayers.map(entry => ({ ...entry.player, championName: catalog.find(champion => champion.id === entry.player.championId)?.name ?? entry.player.championId, team: entry.team, won: entry.won })),
     })
     localStorage.setItem(historyKey, JSON.stringify(history.slice(0, 500)))
     localStorage.setItem(seasonKey, JSON.stringify(season))
