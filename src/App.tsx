@@ -10,13 +10,13 @@ import Playoffs from './Playoffs'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, seedRosterForClub, type Club } from './ClubManager'
 
 const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','플레이오프']
-function dateFromDay(day:number) { return new Date(2026,10,23+day) }
+function dateFromDay(day:number) { return new Date(2026,0,1+day) }
 function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
 function getSeasonPhase(day:number,matches:Match[]) {
   const today=dateKey(dateFromDay(day))
-  if(today<'2027-01-13') return 'PRESEASON'
+  if(today<'2026-01-14') return 'PRESEASON'
   if(matches.length>0 && matches.every(match=>match.status==='종료')) {
-    try { if(JSON.parse(localStorage.getItem('lck-manager-playoffs-2027')||'null')?.champion) return 'OFFSEASON' } catch {}
+    try { if(JSON.parse(localStorage.getItem('lck-manager-playoffs-2026')||'null')?.champion) return 'OFFSEASON' } catch {}
     return 'PLAYOFFS'
   }
   return 'REGULAR SEASON'
@@ -75,11 +75,11 @@ function App() {
   const standings = buildStandings(matches)
   useEffect(() => {
     if (!club) return
-    if (localStorage.getItem('lck-manager-roster-version') !== '2027-v4') {
-      // 2027 roster report correction: refresh the initial club data once.
+    if (localStorage.getItem('lck-manager-roster-version') !== '2026-r34-v1') {
+      // 2026 Round 3-4 roster correction: refresh the official season roster once.
       // Career finances, match history, and saved manager decisions are preserved.
       clubs.forEach(team => localStorage.setItem('lck-manager-roster-' + team.short, JSON.stringify(seedRosterForClub(team))))
-      localStorage.setItem('lck-manager-roster-version', '2027-v4')
+      localStorage.setItem('lck-manager-roster-version', '2026-r34-v1')
       window.dispatchEvent(new Event('lck-roster-updated'))
     }
     const key = 'lck-manager-roster-' + club.short
@@ -200,7 +200,7 @@ function App() {
     return () => window.removeEventListener('keydown', handleSpacebar)
   }, [showLobby, activeMatch, day, club, matches])
   if (showLobby) return <div className="lobby-screen">
-    <div className="lobby-top"><div className="lobby-brand"><b>LCK</b><span>MANAGER 2027</span></div><span className="lobby-build">CAREER MODE · KOREA</span></div>
+    <div className="lobby-top"><div className="lobby-brand"><b>LCK</b><span>MANAGER 2026</span></div><span className="lobby-build">CAREER MODE · KOREA</span></div>
     <div className="lobby-hero"><div className="lobby-kicker">THE NEXT ERA STARTS HERE</div><h1>당신의 선택으로<br/><em>LCK의 역사가 바뀝니다.</em></h1><p>구단을 운영하고, 선수단을 구성하고, 무대 위에서 승리를 만들어 보세요.</p>
       <div className="lobby-actions"><button className="lobby-primary" onClick={()=>{if(club){setShowLobby(false)}else{setShowLobby(false)}}}>{club?'커리어 이어하기':'새 커리어 시작'} <span>→</span></button><button className="lobby-secondary" onClick={()=>{setClub(null);setShowLobby(false)}}>새 게임</button></div>
     </div>
@@ -215,11 +215,11 @@ function App() {
       <div className="logo"><span className="logo-icon">L</span><div><h2>LCK MANAGER</h2><small>ESPORTS MANAGEMENT</small></div></div>
       <div className="manager-label">MANAGEMENT</div>
       <nav>{menus.map((menu,index)=><button key={menu} className={active===menu?'nav-item active':'nav-item'} onClick={()=>{setActive(menu);setActiveMatch(null)}}><span>{['▦','♙','⚔','▤','▥','⇄','◎','♟','◷','☏','▤','☆','₩','▣','🏆'][index]}</span>{menu}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="team-mini" style={{background:club.color}}>{club.short.slice(0,3)}</div><div><strong>{club.name}</strong><small>감독 커리어 · 2027</small></div></div>
+      <div className="sidebar-bottom"><div className="team-mini" style={{background:club.color}}>{club.short.slice(0,3)}</div><div><strong>{club.name}</strong><small>감독 커리어 · 2026</small></div></div>
       <button className="change-club" onClick={()=>{quickSave();setClub(null);setShowLobby(false);setActive('대시보드')}}>구단 변경</button>
     </aside>
     <main className="main">
-      <header className="topbar"><div><span className="season">2027 {seasonPhase}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><span className="spacebar-hint">SPACE 계속하기</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{nextMatch ? '다음 경기일까지 →' : '다음 일정까지 →'}</button></div></header>
+      <header className="topbar"><div><span className="season">2026 {seasonPhase}</span><span className="date">{displayDate}</span></div><div className="topbar-actions"><span className="profile"><span className="online-dot"/>MANAGER</span><span className="spacebar-hint">SPACE 계속하기</span><button className="topbar-save" onClick={quickSave}>저장</button><button className="topbar-lobby" onClick={()=>setShowLobby(true)}>로비</button><button onClick={advanceDay}>{nextMatch ? '다음 경기일까지 →' : '다음 일정까지 →'}</button></div></header>
       <section className="content">{saveMessage && <div className="save-toast">{saveMessage}</div>}
         {activeMatch ? <MatchCenter match={activeMatch} myTeam={club.short} onExit={()=>setActiveMatch(null)} onFinish={(homeScore,awayScore)=>{const updated=matches.map(m=>m.id===activeMatch.id?{...m,status:'종료' as const,homeScore,awayScore}:m);saveMatches(updated);const ourScore=activeMatch.home===club.short?homeScore:awayScore;const theirScore=activeMatch.home===club.short?awayScore:homeScore;const opponent=activeMatch.home===club.short?activeMatch.away:activeMatch.home;applyMatchResult(club,ourScore>theirScore,opponent);setActiveMatch(null);setActive('경기 일정')}}/>
         : active==='선수단' ? <Roster key={club.short} teamName={club.name} teamShort={club.short} onOpenMarket={()=>setActive('이적시장')}/>
@@ -229,10 +229,10 @@ function App() {
         : active==='경기 일정' ? <Schedule teamName={club.short} onStartMatch={m=>setActiveMatch(m)}/>
          : active==='리그 순위' ? <LeagueTable standings={standings} myTeam={club.short}/>
         : active==='플레이오프' ? <Playoffs standings={standings} myTeam={club.short}/>
-        : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive}/>
+        : ['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록'].includes(active) ? <ClubOffice club={club} page={active} onChangePage={setActive} currentDate={dateKey(gameDate)}/>
         : <div className="fm-dashboard">
-          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2027 시즌을 운영하세요. 현재 단계: {phaseLabel(seasonPhase)}</p></div><div className="fm-season"><span>2027 SEASON</span><strong>{phaseLabel(seasonPhase)}</strong><small>{seasonPhase==='PRESEASON'?'정규 시즌 개막까지 준비 중':seasonPhase==='REGULAR SEASON'?'정규 시즌 진행 중':'정규 시즌 종료 · 다음 시즌 준비'}</small></div></div>
-          <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK · 2027 {phaseLabel(seasonPhase)}</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
+          <div className="fm-welcome"><div><p className="fm-eyebrow">LEAGUE OF LEGENDS · KOREA</p><h1>구단 운영 센터</h1><p>{club.name}의 2026 시즌을 운영하세요. 현재 단계: {phaseLabel(seasonPhase)}</p></div><div className="fm-season"><span>2026 SEASON</span><strong>{phaseLabel(seasonPhase)}</strong><small>{seasonPhase==='PRESEASON'?'정규 시즌 개막까지 준비 중':seasonPhase==='REGULAR SEASON'?'정규 시즌 진행 중':'정규 시즌 종료 · 다음 시즌 준비'}</small></div></div>
+          <div className="fm-team-banner"><div className="fm-team-symbol" style={{background:club.color}}>{club.short}</div><div className="fm-team-info"><span>YOUR CLUB</span><h2>{club.name}</h2><p>대한민국 · LCK · 2026 {phaseLabel(seasonPhase)}</p></div><div className="fm-team-power"><span>TEAM RATING</span><strong>{teamPower}</strong><small>OVERALL POWER</small></div></div>
           <div className="fm-stats">
             <div className="fm-stat-card"><span>선수단</span><strong>{roster.length}<small>명</small></strong><p>등록 선수</p></div>
             <div className="fm-stat-card"><span>리그 순위</span><strong>{myRank||'-'}<small>위</small></strong><p>현재 리그 순위</p></div>
