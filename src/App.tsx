@@ -11,7 +11,7 @@ import AcademyLeague from './AcademyLeague'
 import { advanceCareerWeek, applyMatchResult, ClubOffice, ClubSelection, clubs, readClubRoster, readClubStaff, seedRosterForClub, type Club } from './ClubManager'
 
 const menus = ['대시보드','선수단','전술 및 밴픽','경기 일정','리그 순위','이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록','2군 · LCK CL','플레이오프']
-function dateFromDay(day:number) { return new Date(2026,0,1+day) }
+function dateFromDay(day:number) { return new Date(2025,10,23+day) }
 function dateKey(date:Date) { return [date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-') }
 function getSeasonPhase(day:number,matches:Match[]) {
   const today=dateKey(dateFromDay(day))
