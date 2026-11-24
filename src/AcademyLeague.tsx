@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { academyRosterNotess, academyTeams } from './academyData'
+import { academyRosterNotes, academyTeams } from './academyData'
 import './AcademyLeague.css'
 
 type Stage = 'R1-2' | 'R3-4' | 'PLAYIN' | 'PLAYOFFS' | 'OFFSEASON'
@@ -236,9 +236,9 @@ export default function AcademyLeague({teamShort}:{teamShort:string}){
     </div>
     {tab==='roster'&&<section className="cl-roster-section">
       <div className="cl-section-heading"><div><span>ACADEMY DIRECTORY</span><h2>10개 구단 2군 선수단</h2></div><select value={selected} onChange={event=>setSelected(event.target.value)}>{academyTeams.map(item=><option key={item.id} value={item.short}>{item.name}</option>)}</select></div>
-      <div className="cl-team-banner"><div><small>FIRST TEAM · {team.firstTeam}</small><h3>{team.name}</h3><p>2군 감독 {team.coach}{team.assistantCoaches.length?' · 코치 '+team.coaches.join(' · '):''}</p></div><strong>{team.players.filter(player=>player.status==='주전').length}<small>주전</small></strong></div>
+      <div className="cl-team-banner"><div><small>FIRST TEAM · {team.firstTeam}</small><h3>{team.name}</h3><p>2군 감독 {team.coach}{team.assistantCoaches.length?' · 코치 '+team.assistantCoaches.join(' · '):''}</p></div><strong>{team.players.filter(player=>player.status==='주전').length}<small>주전</small></strong></div>
       <div className="cl-player-grid">{team.players.map(player=><article key={player.id} className={player.status==='후보'?'substitute':''}><div className="cl-avatar">{player.name.charAt(0)}</div><div className="cl-player-info"><span>{player.role} · {player.status}</span><b>{player.name}</b><small>{player.champions.join(' · ')}</small></div><div className="cl-ratings"><strong>{player.overall}<small>OVR</small></strong><span>POT {player.potential}</span></div></article>)}</div>
-      <p className="cl-data-note">{academyRosterNote} 생년월일과 공개되지 않은 계약 정보는 임의로 만들어 넣지 않았습니다.</p>
+      <p className="cl-data-note">{academyRosterNotes} 생년월일과 공개되지 않은 계약 정보는 임의로 만들어 넣지 않았습니다.</p>
     </section>}
     {tab==='standings'&&<section className="cl-standings-section">
       <div className="cl-section-heading"><div><span>REGULAR SEASON</span><h2>CL 그룹 순위</h2><p>R1~2 순위를 기준으로 그룹을 나누고, R1~2의 맞대결 성적을 R3~4에 승계합니다.</p></div></div>
