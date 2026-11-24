@@ -139,27 +139,29 @@ function addKill(state: MatchState, winner: Side) {
 }
 
 function destroyStructure(state: MatchState, attacker: Side, lane: Lane) {
-  const team = state[attacker]
-  if (team.towersRemaining[lane] > 0) {
-    team.towersRemaining[lane] -= 1
-    team.gold += 250
-    addEvent(state, 'structure', `${team.name} ${lane} 라인 포탑 파괴`)
+  const defender: Side = attacker === 'blue' ? 'red' : 'blue'
+  const attackingTeam = state[attacker]
+  const defendingTeam = state[defender]
+  if (defendingTeam.towersRemaining[lane] > 0) {
+    defendingTeam.towersRemaining[lane] -= 1
+    attackingTeam.gold += 250
+    addEvent(state, 'structure', `${attackingTeam.name} ${defender === 'blue' ? '블루' : '레드'} ${lane} 라인 포탑 파괴`)
     return
   }
-  if (team.inhibitorsAlive[lane]) {
-    team.inhibitorsAlive[lane] = false
-    team.gold += 300
-    addEvent(state, 'structure', `${team.name} ${lane} 억제기 파괴 · 슈퍼 미니언 생성`)
+  if (defendingTeam.inhibitorsAlive[lane]) {
+    defendingTeam.inhibitorsAlive[lane] = false
+    attackingTeam.gold += 300
+    addEvent(state, 'structure', `${attackingTeam.name} ${lane} 억제기 파괴 · 슈퍼 미니언 생성`)
     return
   }
-  if (team.nexusTowersRemaining > 0) {
-    team.nexusTowersRemaining -= 1
-    team.gold += 150
-    addEvent(state, 'structure', `${team.name} 넥서스 포탑 파괴`)
+  if (defendingTeam.nexusTowersRemaining > 0) {
+    defendingTeam.nexusTowersRemaining -= 1
+    attackingTeam.gold += 150
+    addEvent(state, 'structure', `${attackingTeam.name} 넥서스 포탑 파괴`)
     return
   }
-  team.nexusHealth = clamp(team.nexusHealth - 35, 0, 100)
-  addEvent(state, 'structure', `${team.name} 넥서스 공략 · 내구도 ${team.nexusHealth}%`)
+  defendingTeam.nexusHealth = clamp(defendingTeam.nexusHealth - 35, 0, 100)
+  addEvent(state, 'structure', `${attackingTeam.name} 넥서스 공략 · ${defendingTeam.name} 내구도 ${defendingTeam.nexusHealth}%`)
 }
 
 function resolveObjective(state: MatchState, objective: 'dragon' | 'grubs' | 'herald' | 'baron' | 'elder') {
