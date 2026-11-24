@@ -54,7 +54,7 @@ function restoreSnapshot(slot:number) {
   const keys:string[]=[]
   for(let i=0;i<localStorage.length;i++){
     const key=localStorage.key(i)
-    if(key && (key.startsWith('lck-manager-') || key.startsWith('lck-career-'))) keys.push(key)
+    if(key && (key.startsWith('lck-manager-') || key.startsWith('lck-career-') || key.startsWith('lck-cl-'))) keys.push(key)
   }
   keys.forEach(key=>localStorage.removeItem(key))
   Object.entries(snapshot.values as Record<string,string>).forEach(([key,value])=>localStorage.setItem(key,value))
