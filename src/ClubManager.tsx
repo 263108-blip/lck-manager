@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { academyPool, marketPool, seasonClubs, staffPool, type ClubData, type PlayerData, roleOrder } from './seasonData'
 import { ageAtDate, staffByTeam } from './staffData'
+import { getCurrentSeasonEvent, getSeasonPhase } from './seasonEvents'
 
 export type Club = { name: string; short: string; strength: number; budget: number; difficulty: string; color: string }
 export const clubs: Club[] = seasonClubs.map(team => ({
@@ -268,6 +269,8 @@ export function ClubOffice({club,page,onChangePage,currentDate='2026-01-01'}:{cl
   useEffect(()=>{const refresh=()=>setCareer(readCareer(team));window.addEventListener('lck-career-updated',refresh);return()=>window.removeEventListener('lck-career-updated',refresh)},[club.short])
   useEffect(()=>{setRoster(readClubRoster(club.short));setCareer(readCareer(team));setSelectedPlayer(null)},[club.short])
   const payroll=roster.reduce((sum,p)=>sum+p.salary,0)+career.staff.reduce((sum,s)=>sum+s.salary,0)
+  const currentEvent=getCurrentSeasonEvent(currentDate)
+  const currentPhase=getSeasonPhase(currentDate)
   const interviewee=roster.find(p=>p.id===interviewPlayerId)||roster[0]
   const marketPlayers=useMemo(()=>{
     const activePlayers=seasonClubs.flatMap(c=>readClubRoster(c.short))
@@ -373,7 +376,7 @@ export function ClubOffice({club,page,onChangePage,currentDate='2026-01-01'}:{cl
   const title=page==='이적시장'?'이적시장':page==='스카우팅'?'스카우팅 센터':page==='코칭 스태프'?'코칭 스태프':page==='훈련'?'훈련 및 선수 성장':page==='선수 면담'?'선수 면담':page==='기자회견'?'기자회견':page==='유망주 육성'?'유망주 육성':page==='재정 및 스폰서'?'재정 및 스폰서':'구단 기록'
   const pages=['이적시장','스카우팅','코칭 스태프','훈련','선수 면담','기자회견','유망주 육성','재정 및 스폰서','구단 기록']
   return <div className="club-office pro-office">
-    <div className="pro-office-head"><div><small>2026 SEASON · CLUB OPERATIONS</small><h1>{title}</h1><p>{club.name} · {career.week}주차 · 프리시즌 운영</p></div><div className="pro-cash"><small>TRANSFER & OPERATING BUDGET</small><strong>{money(career.budget)}</strong><span>주간 스폰서 {money(career.sponsorIncome)}</span></div></div>
+    <div className="pro-office-head"><div><small>2026 SEASON · CLUB OPERATIONS</small><h1>{title}</h1><p>{club.name} · {career.week}주차 · {currentEvent?.name ?? currentPhase}</p></div><div className="pro-cash"><small>TRANSFER & OPERATING BUDGET</small><strong>{money(career.budget)}</strong><span>주간 스폰서 {money(career.sponsorIncome)}</span></div></div>
     <nav className="pro-office-tabs">{pages.map(tab=><button className={page===tab?'active':''} key={tab} onClick={()=>onChangePage(tab)}>{tab}</button>)}</nav>
     {notice&&<div className="pro-notice"><span>{notice}</span><button onClick={()=>setNotice('')}>확인</button></div>}
     <div className="pro-kpis"><div><small>1군 등록</small><b>{roster.length}<em>명</em></b></div><div><small>선수단 연봉</small><b>{money(roster.reduce((s,p)=>s+p.salary,0))}<em>/년</em></b></div><div><small>코칭 스태프</small><b>{career.staff.length}<em>명</em></b></div><div><small>팀 사기</small><b>{career.morale}<em>/100</em></b></div></div>
