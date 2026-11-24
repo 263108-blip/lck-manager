@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { academyPool, marketPool, seasonClubs, staffPool, type ClubData, type PlayerData, roleOrder } from './seasonData'
-import { ageAtDate, staffByTeam, type StaffProfile } from './staffData'
+import { ageAtDate, staffByTeam } from './staffData'
 
 export type Club = { name: string; short: string; strength: number; budget: number; difficulty: string; color: string }
 export const clubs: Club[] = seasonClubs.map(team => ({
@@ -29,7 +29,7 @@ export function saveClubRoster(short:string, roster:PlayerData[]) {
   if(activeShort===short) localStorage.setItem('lck-manager-roster',JSON.stringify(roster))
   window.dispatchEvent(new Event('lck-roster-updated'))
 }
-type Staff = StaffProfile
+type Staff = {id:string;name:string;realName?:string;birthDate?:string;role:string;rating:number;salary:number;focus:string;sourceNote?:string}
 type Career = {
   budget:number; initialBudget:number; week:number; morale:number; training:string
   sponsorIncome:number; sponsorName:string; transferSpent:number; wageSpent:number
