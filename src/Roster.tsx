@@ -88,7 +88,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  const refreshStats=()=>{try{setSeasonStats(JSON.parse(localStorage.getItem('lck-player-season-stats-2027')||'{}'))}catch{setSeasonStats({})}}
+  const refreshStats=()=>{try{setSeasonStats(JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}'))}catch{setSeasonStats({})}}
   window.addEventListener('lck-player-stats-updated',refreshStats)
   window.addEventListener('storage',refreshStats)
   return ()=>{window.removeEventListener('lck-player-stats-updated',refreshStats);window.removeEventListener('storage',refreshStats)}
@@ -134,79 +134,6 @@ const substitutes = roster
     setRoster(readClubRoster(teamShort) as Player[])
     alert(`${selected.name} 선수와 ${renewYears}년 재계약했습니다.`)
   }
-function addChampion() {
-  if (!selected || !newChampion.trim()) {
-    alert('챔피언 이름을 입력해 주세요.')
-    return
-  }
-
-  const name = newChampion.trim()
-
-  if (
-    selected.champions.some(c =>
-      (typeof c === 'string' ? c : c.name) === name
-    )
-  ) {
-    alert('이미 등록된 챔피언입니다.')
-    return
-  }
-
-  setRoster(prev =>
-    prev.map(p =>
-      p.name === selected.name
-        ? {
-            ...p,
-            champions: [
-              ...p.champions,
-              { name, mastery: newMastery },
-            ],
-          }
-        : p
-    )
-  )
-
-  setNewChampion('')
-  setNewMastery(70)
-}
-
-function updateChampionMastery(name: string, mastery: number) {
-  if (!selected) return
-
-  setRoster(prev =>
-    prev.map(p =>
-      p.name === selected.name
-        ? {
-            ...p,
-            champions: p.champions.map(c => ({
-              name: typeof c === 'string' ? c : c.name,
-              mastery:
-                (typeof c === 'string' ? c : c.name) === name
-                  ? mastery
-                  : typeof c === 'string' ? 70 : c.mastery,
-            })),
-          }
-        : p
-    )
-  )
-}
-
-function removeChampion(name: string) {
-  if (!selected) return
-
-  setRoster(prev =>
-    prev.map(p =>
-      p.name === selected.name
-        ? {
-            ...p,
-            champions: p.champions.filter(c =>
-              (typeof c === 'string' ? c : c.name) !== name
-            ),
-          }
-        : p
-    )
-  )
-}
-  
 function changeStatus() {
   if (!selected) return
 
