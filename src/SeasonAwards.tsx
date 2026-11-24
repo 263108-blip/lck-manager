@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { readClubRoster } from './ClubManager'
+import { readClubRoster, readClubStaff } from './ClubManager'
+import { buildStandings, loadMatches } from './matchData'
 import { roleOrder, seasonClubs, type PlayerData, type Role } from './seasonData'
 import './SeasonAwards.css'
 
@@ -7,7 +8,7 @@ type PlayerStats={matches:number;wins:number;losses:number;kills:number;deaths:n
 type PlayerEntry=PlayerData & {teamShort:string;stats:PlayerStats}
 type RetiredEntry={id:string;name:string;role:string;team:string;age:number;overall:number;retiredDate:string;season:number;mvp:number}
 type HallEntry=RetiredEntry & {inductedSeason:number}
-type AwardSave={season:number;mvp:string;rookie:string;allPro:Record<Role,string[]>;awardedAt:string}
+type AwardSave={season:number;mvp:string;rookie:string;coach:string;allPro:Record<Role,string[]>;awardedAt:string}
 const defaultStats:PlayerStats={matches:0,wins:0,losses:0,kills:0,deaths:0,assists:0,mvp:0,cs:0}
 function readStats():Record<string,PlayerStats>{try{return JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}')}catch{return {}}}
 function readHall():HallEntry[]{try{return JSON.parse(localStorage.getItem('lck-manager-hall-of-fame-2026')||'[]')}catch{return []}}
@@ -58,9 +59,20 @@ export default function SeasonAwards({currentDate='2026-11-14'}:{currentDate?:st
  })[0],[entries])
  const rookie=useMemo(()=>entries.filter(player=>player.age<=22&&player.stats.matches>0).sort((a,b)=>playerScore(b)-playerScore(a))[0],[entries])
  const gamesRecorded=entries.reduce((sum,player)=>sum+player.stats.matches,0)/10
+ const coachOfYear=useMemo(()=>{
+  const standings=buildStandings(loadMatches())
+  const candidates=seasonClubs.flatMap(team=>{
+   const standing=standings.find(row=>row.name===team.short)
+   const coach=readClubStaff(team.short,currentDate).find(staff=>staff.role==='감독')
+   if(!coach||!standing||standing.played===0)return []
+   const score=coach.rating*.45+standing.winRate*.25+standing.wins*.45+(standing.setDiff*.18)+(standing.wins>=12?5:0)
+   return [{team:team.short,coach:coach.name,score,standing}]
+  }).sort((a,b)=>b.score-a.score)
+  return candidates[0]
+ },[currentDate,revision])
  const awardSeason=()=>{
   if(!mvp){window.alert('시즌 경기를 완료한 선수가 없어 MVP를 확정할 수 없습니다.');return}
-  const value:AwardSave={season:2026,mvp:playerLabel(mvp),rookie:rookie?playerLabel(rookie):'신인 후보 없음',allPro:Object.fromEntries(roleOrder.map(role=>[role,allPro[role].map(playerLabel)])) as Record<Role,string[]>,awardedAt:currentDate}
+  const value:AwardSave={season:2026,mvp:playerLabel(mvp),rookie:rookie?playerLabel(rookie):'신인 후보 없음',coach:coachOfYear?coachOfYear.coach+' · '+coachOfYear.team:'감독 후보 기록 부족',allPro:Object.fromEntries(roleOrder.map(role=>[role,allPro[role].map(playerLabel)])) as Record<Role,string[]>,awardedAt:currentDate}
   localStorage.setItem('lck-manager-season-awards-2026',JSON.stringify(value))
   setSaved(value)
  }
@@ -72,9 +84,9 @@ export default function SeasonAwards({currentDate='2026-11-14'}:{currentDate?:st
    <div className="season-award-grid">
     <article className="season-award-card featured"><span>PLAYER OF THE YEAR</span><small>2026 SEASON MVP</small><strong>{mvp?.name??'아직 미정'}</strong><p>{mvp?mvp.teamShort+' · '+mvp.role+' · '+mvp.stats.matches+'경기 · '+mvp.stats.mvp+'회 MVP:' :'선수가 경기를 완료하면 실제 플레이 기록으로 후보를 계산합니다.'}</p>{mvp&&<b>KDA {mvp.stats.kills}/{mvp.stats.deaths}/{mvp.stats.assists}</b>}</article>
     <article className="season-award-card"><span>ROOKIE OF THE YEAR</span><small>2026 NEWCOMER</small><strong>{rookie?.name??'아직 미정'}</strong><p>{rookie?rookie.teamShort+' · '+rookie.role+' · 만 '+rookie.age+'세':'만 22세 이하 출전 선수가 생기면 후보를 계산합니다.'}</p></article>
-    <article className="season-award-card"><span>COACH OF THE YEAR</span><small>MANAGEMENT AWARD</small><strong>시즌 종료 후 확정</strong><p>승률, 플레이오프 성적, 선수 성장 기록을 통합한 감독 평가가 준비됩니다.</p></article>
+    <article className="season-award-card"><span>COACH OF THE YEAR</span><small>MANAGEMENT AWARD</small><strong>{coachOfYear?.coach??'기록 대기'}</strong><p>{coachOfYear?coachOfYear.team+' · '+coachOfYear.standing.wins+'승 '+coachOfYear.standing.losses+'패 · '+coachOfYear.standing.winRate+'% 승률':'완료된 리그 경기와 등록 감독이 있어야 후보를 계산합니다.'}</p></article>
    </div>
-   <div className="season-award-footer"><div><strong>{saved?'2026 수상 결과 저장 완료':'수상 결과 미확정'}</strong><span>{saved?'확정일 '+saved.awardedAt+' · MVP '+saved.mvp:'실제 경기를 진행한 선수 기록을 모은 뒤 시상식을 확정하세요.'}</span></div><button onClick={awardSeason} disabled={!mvp}>2026 시상식 결과 확정</button></div>
+   <div className="season-award-footer"><div><strong>{saved?'2026 수상 결과 저장 완료':'수상 결과 미확정'}</strong><span>{saved?'확정일 '+saved.awardedAt+' · MVP '+saved.mvp+' · 감독 '+saved.coach:'실제 경기를 진행한 선수 기록을 모은 뒤 시상식을 확정하세요.'}</span></div><button onClick={awardSeason} disabled={!mvp}>2026 시상식 결과 확정</button></div>
    {saved&&<p className="season-award-note">확정된 결과는 브라우저 저장 데이터에 보존됩니다. 다시 확정하면 현재 시즌 기록으로 갱신됩니다.</p>}
   </section>}
   {tab==='allpro'&&<section className="season-award-content">
