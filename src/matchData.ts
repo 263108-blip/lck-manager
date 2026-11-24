@@ -84,7 +84,7 @@ function buildGroupFixtures(ids:string[],group:Group):Match[]{
     time:index%2===0?'17:00':'19:00',
     home:pair[0],
     away:pair[1],
-    status:'予定',
+    status:'예정',
     stage:'R3-4',
     group,
     round:'R'+(round+1),
@@ -169,6 +169,6 @@ export function buildStandings(matches:Match[]):Standing[] {
     if(match.stage==='R3-4')return true
     return (legend.has(match.home)&&legend.has(match.away))||(rise.has(match.home)&&rise.has(match.away))
   })
-  return calculateTable(relevant,()=>true).map(row=>({...row,group:legend.has(row.name)?'LEGEND':'RISE'}))
+  return calculateTable(relevant,()=>true).map(row=>({...row,group:(legend.has(row.name)?'LEGEND':'RISE') as Group}))
     .sort((a,b)=>(a.group===b.group?0:a.group==='LEGEND'?-1:1)||b.wins-a.wins||b.setDiff-a.setDiff||a.name.localeCompare(b.name))
 }
