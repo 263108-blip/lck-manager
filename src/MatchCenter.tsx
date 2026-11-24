@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Match } from './matchData'
 import { seasonClubs } from './seasonData'
 import { loadChampionCatalog, type ChampionData, type Role } from './champions'
-import { advanceMatch, createMatchState, type MatchState, type PlayerMatchStats, type SimPlayer } from './matchEngine'
+import { advanceMatch, createMatchState, type MatchState, type Side, type SimPlayer } from './matchEngine'
 import './MatchCenter.css'
 
 type Player = {
@@ -332,7 +332,7 @@ function MatchCenter({ match, myTeam = 'T1', onFinish, onExit }: Props) {
               {roles.map(role => {
                 const player = roster.find(item => item.role === role)!
                 const champion = catalog.find(item => item.id === picks[role])
-                return <button key={role} className={activeRole === role && draftMode === 'pick' ? 'mc-player-slot active' : 'mc-player-slot'} onClick={() => { setActiveRole(role); setDraftMode('pick') }}>
+                return <button key={role} className={activeRole === role && draftMode === 'pick' ? 'mc-player-slot active' : 'mc-player-slot'} onClick={() => { if (bans.length < 5) { setCatalogError('우리 팀 밴 5개를 먼저 선택하세요.'); return } setActiveRole(role); setDraftMode('pick'); setCatalogError('') }}>
                   <span className="mc-role-chip">{ROLE_LABEL[role]}</span><span className="mc-slot-player"><b>{player.name}</b><small>{role}</small></span>
                   {champion ? <img src={champion.image} alt={champion.name}/> : <span className="mc-slot-empty">CHOOSE</span>}
                   <span className="mc-slot-champion">{champion?.name ?? '챔피언 선택'}</span>
