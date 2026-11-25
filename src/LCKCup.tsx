@@ -145,7 +145,6 @@ function TeamTable({rows}:{rows:TeamRow[]}){
 export default function LCKCup({myTeam}:{myTeam:string}){
  const [save,setSave]=useState<CupSave>(readSave)
  const [tab,setTab]=useState<'overview'|'schedule'|'bracket'>('overview')
- const [selectedDate,setSelectedDate]=useState('')
  const saveNext=(next:CupSave)=>{setSave(next);localStorage.setItem(KEY,JSON.stringify(next));window.dispatchEvent(new Event('lck-cup-updated'))}
  const baron=useMemo(()=>groupRows(save,'BARON'),[save])
  const elder=useMemo(()=>groupRows(save,'ELDER'),[save])
@@ -162,7 +161,7 @@ export default function LCKCup({myTeam}:{myTeam:string}){
  }
  const upcoming=save.matches.filter(m=>m.stage==='PLAYIN'||m.stage==='PLAYOFFS')
  return <div className="lck-cup-page">
-  <header className="lck-cup-header"><div><span>2026 LCK CUP · SPLIT 1</span><h1>Group Battle · First Stand 진출 경쟁</h1><p>Baron/Elder 두 그룹의 교차 대결, Super Week, 플레이-인과 더블 엘리미네이션</p></div><div><small>현재 단계</small><strong>{save.stage==='GROUP'?'GROUP BATTLE':save.stage==='PLAYIN'?'PLAY-IN':save.stage==='PLAYOFFS'?'PLAYOFFS':'FINISHED'}</strong><span>{progress} / {save.matches.length}경기 종료</span></div></header>
+  <header className="lck-cup-header"><div><span>2026 LCK CUP · SPLIT 1</span><h1>Group Battle · First Stand 진출 경쟁</h1><p>{myTeam} 감독 커리어 · Baron/Elder 두 그룹의 교차 대결, Super Week, 플레이-인과 더블 엘리미네이션</p></div><div><small>현재 단계</small><strong>{save.stage==='GROUP'?'GROUP BATTLE':save.stage==='PLAYIN'?'PLAY-IN':save.stage==='PLAYOFFS'?'PLAYOFFS':'FINISHED'}</strong><span>{progress} / {save.matches.length}경기 종료</span></div></header>
   <nav className="lck-cup-tabs"><button className={tab==='overview'?'active':''} onClick={()=>setTab('overview')}>그룹 순위</button><button className={tab==='schedule'?'active':''} onClick={()=>setTab('schedule')}>일정 · 결과</button><button className={tab==='bracket'?'active':''} onClick={()=>setTab('bracket')}>플레이-인 · 플레이오프</button></nav>
   <section className="lck-cup-next"><div><small>다음 경기일</small><strong>{nextDate??'대회 종료'}</strong><span>{dayMatches.length}개 시리즈 · {dayMatches.reduce((s,m)=>s+m.bestOf,0)}게임 최대</span></div><button disabled={!nextDate} onClick={playDate}>다음 경기일 결과 진행 →</button></section>
   {tab==='overview'&&<div className="lck-cup-groups">
