@@ -15,7 +15,7 @@ export type Match = {
   round?:string
 }
 export const teams=['T1','GEN.G','HLE','DK','KT','DRX','BNK FEARX','NS','BRO','DN']
-const STORAGE_KEY='lck-manager-matches-2026'
+const storageKey=()=>`lck-manager-matches-${Number(localStorage.getItem('lck-manager-season-year')||2026)}`
 const UPDATE_EVENT='lck-matches-updated'
 const dateKey=(date:Date)=>[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-')
 function shiftDate(date:string,days:number){
@@ -133,7 +133,7 @@ function ensureGroupStage(matches:Match[]):Match[]{
 
 export function loadMatches():Match[] {
   try {
-    const saved=localStorage.getItem(STORAGE_KEY)
+    const saved=localStorage.getItem(storageKey())
     if(!saved)return initialMatches
     const parsed=JSON.parse(saved) as Match[]
     const byId=new Map(parsed.map(match=>[match.id,match]))
@@ -145,8 +145,19 @@ export function loadMatches():Match[] {
 }
 export function saveMatches(matches:Match[]) {
   const updated=ensureGroupStage(matches)
-  localStorage.setItem(STORAGE_KEY,JSON.stringify(updated))
+  localStorage.setItem(storageKey(),JSON.stringify(updated))
   window.dispatchEvent(new Event(UPDATE_EVENT))
+}
+export function resetSeasonMatches(seasonYear=2026) {
+  localStorage.removeItem(storageKey())
+  const yearOffset=seasonYear-2026
+  const shifted=initialMatches.map(match=>{
+    const date=new Date(match.date+'T12:00:00')
+    date.setFullYear(date.getFullYear()+yearOffset)
+    const dateString=dateKey(date)
+    return {...match,date:dateString,status:'예정' as const,homeScore:undefined,awayScore:undefined}
+  })
+  saveMatches(shifted)
 }
 export function useLeagueMatches() {
   const [matches,setMatches]=useState<Match[]>(loadMatches)

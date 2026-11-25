@@ -12,6 +12,16 @@ export type PlayerData = {
   teamfight: number
   consistency: number
   clutch: number
+  physical?: number
+  vision?: number
+  objectives?: number
+  communication?: number
+  teamwork?: number
+  championPool?: number
+  growthSpeed?: number
+  imageUrl?: string
+  dataSource?: 'official'|'report'|'rumor'|'game-estimate'
+  sourceCheckedAt?: string
   champions: (string | {name:string;mastery?:number})[]
   salary: number
   value: number
@@ -31,7 +41,7 @@ export type ClubData = {
   coach: string
   players: PlayerData[]
 }
-const p = (id:string,name:string,role:Role,age:number,ovr:number,pot:number,lane:number,mech:number,macro:number,teamfight:number,consistency:number,clutch:number,salary:number,value:number,contractUntil:number,team:string,champions:string[],contractStatus:PlayerData['contractStatus']='계약 유지',status:PlayerData['status']='주전'):PlayerData => ({id,name,role,age,overall:ovr,potential:pot,lane,mechanics:mech,macro,teamfight,consistency,clutch,salary,value,contractUntil,team,champions,contractStatus,status,morale:76})
+const p = (id:string,name:string,role:Role,age:number,ovr:number,pot:number,lane:number,mech:number,macro:number,teamfight:number,consistency:number,clutch:number,salary:number,value:number,contractUntil:number,team:string,champions:string[],contractStatus:PlayerData['contractStatus']='계약 유지',status:PlayerData['status']='주전'):PlayerData => ({id,name,role,age,overall:ovr,potential:pot,lane,mechanics:mech,macro,teamfight,consistency,clutch,physical:mech,vision:macro,objectives:macro,communication:consistency,teamwork:consistency,championPool:84,growthSpeed:age<=21?85:age<=24?65:35,imageUrl:'',dataSource:contractStatus==='거피셜'?'rumor':'game-estimate',sourceCheckedAt:'2026-11-24',salary,value,contractUntil,team,champions,contractStatus,status,morale:76})
 // 2026 LCK Round 3-4 main rosters. Overall/potential/financial values are game-balance estimates.
 // 2026 LCK Round 3-4. Competitive ratings and finances are game-balance estimates.
 export const seasonClubs: ClubData[] = [

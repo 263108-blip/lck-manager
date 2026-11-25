@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react'
 import { useLeagueMatches, saveMatches, type Match } from './matchData'
+import { applyMatchResult, clubs } from './ClubManager'
 
 const filters = ['전체', '예정', '종료']
 
@@ -46,6 +47,7 @@ function Schedule({ onStartMatch, teamName = 'T1' }: ScheduleProps) {
 
   function registerResult() {
     if (!selectedMatch) return
+    const isResultEdit=selectedMatch.status==='종료'
 
     const home = Number(homeScore)
     const away = Number(awayScore)
@@ -82,7 +84,32 @@ function Schedule({ onStartMatch, teamName = 'T1' }: ScheduleProps) {
     )
 
     saveMatches(updated)
-    setMessage('경기 결과가 저장되었습니다. 리그 순위도 갱신됐어요!')
+    if(!isResultEdit){
+      let seasonStats:Record<string,{matches:number;wins:number;losses:number;kills:number;deaths:number;assists:number;mvp:number}>={}
+      try {
+        const season=Number(localStorage.getItem('lck-manager-season-year')||2026)
+        seasonStats=JSON.parse(localStorage.getItem(`lck-player-season-stats-${season}`)||'{}')
+      } catch {}
+      const season=Number(localStorage.getItem('lck-manager-season-year')||2026)
+      for(const [teamShort,won] of [[selectedMatch.home,home>away],[selectedMatch.away,away>home]] as const){
+        try {
+          const roster=JSON.parse(localStorage.getItem(`lck-manager-roster-${teamShort}`)||'[]') as Array<{name:string;status?:string}>
+          roster.filter(player=>player.status==='주전').forEach(player=>{
+            const previous=seasonStats[player.name]||{matches:0,wins:0,losses:0,kills:0,deaths:0,assists:0,mvp:0}
+            seasonStats[player.name]={...previous,matches:previous.matches+1,wins:previous.wins+(won?1:0),losses:previous.losses+(won?0:1)}
+          })
+        } catch {}
+      }
+      localStorage.setItem(`lck-player-season-stats-${season}`,JSON.stringify(seasonStats))
+      window.dispatchEvent(new Event('lck-player-stats-updated'))
+    }
+    if(!isResultEdit){
+      const homeClub=clubs.find(club=>club.short===selectedMatch.home)
+      const awayClub=clubs.find(club=>club.short===selectedMatch.away)
+      if(homeClub) applyMatchResult(homeClub,home>away,selectedMatch.away)
+      if(awayClub) applyMatchResult(awayClub,away>home,selectedMatch.home)
+    }
+    setMessage(isResultEdit?'종료된 경기 결과가 수정됐습니다. 리그 순위가 다시 계산됐어요!':'경기 결과가 저장되었습니다. 리그 순위와 구단 기록이 갱신됐어요!')
   }
 
   return (

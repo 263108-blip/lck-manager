@@ -30,17 +30,17 @@ type Player = {
   contractUntil?: number
   contractStatus?: string
   morale?: number
+  physical?: number
+  vision?: number
+  objectives?: number
+  communication?: number
+  teamwork?: number
+  championPool?: number
+  growthSpeed?: number
+  imageUrl?: string
+  dataSource?: 'official'|'report'|'rumor'|'game-estimate'
+  sourceCheckedAt?: string
 }
-
-const initialPlayers: Player[] = [
-  { name: 'Zeus', role: 'TOP', team: 'T1', age: 22, overall: 96, lane: 98, teamfight: 96, macro: 94, mechanics: 98, champions: ['제이스', '그웬', '럼블'], status: '주전' },
-  { name: 'Oner', role: 'JNG', team: 'T1', age: 23, overall: 95, lane: 93, teamfight: 96, macro: 96, mechanics: 95, champions: ['리 신', '바이', '자르반 4세'], status: '주전' },
-  { name: 'Faker', role: 'MID', team: 'T1', age: 30, overall: 99, lane: 98, teamfight: 99, macro: 100, mechanics: 98, champions: ['아지르', '오리아나', '갈리오'], status: '주전' },
-  { name: 'Gumayusi', role: 'ADC', team: 'T1', age: 24, overall: 96, lane: 97, teamfight: 98, macro: 94, mechanics: 97, champions: ['바루스', '진', '징크스'], status: '주전' },
-  { name: 'Keria', role: 'SUP', team: 'T1', age: 24, overall: 98, lane: 99, teamfight: 98, macro: 97, mechanics: 99, champions: ['바드', '파이크', '라칸'], status: '주전' },
-  { name: 'Canna', role: 'TOP', team: 'T1', age: 26, overall: 85, lane: 86, teamfight: 84, macro: 85, mechanics: 85, champions: ['레넥톤', '그웬'], status: '후보' },
-  { name: 'Poby', role: 'MID', team: 'T1', age: 20, overall: 80, lane: 80, teamfight: 81, macro: 79, mechanics: 80, champions: ['아리', '아지르'], status: '후보' },
-]
 
 const roles = ['전체', 'TOP', 'JNG', 'MID', 'ADC', 'SUP']
 const STORAGE_KEY = 'lck-manager-roster'
@@ -71,16 +71,20 @@ function loadRoster(teamShort: string): Player[] {
     console.warn('저장된 선수단 데이터를 불러오지 못했습니다.')
   }
 
-  return (readClubRoster(teamShort) as Player[]) || initialPlayers
+  return readClubRoster(teamShort) as Player[]
 }
 
 export default function Roster({ teamName = 'T1', teamShort = 'T1', onOpenMarket, currentDate = '2026-11-14' }: { teamName?: string; teamShort?: string; onOpenMarket?: () => void; currentDate?: string }) {
   const [roster, setRoster] = useState<Player[]>(() => loadRoster(teamShort))
-  const [seasonStats,setSeasonStats] = useState<Record<string,SeasonStats>>(()=>{try{return JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}')}catch{return {}}})
-  const [matchHistory,setMatchHistory] = useState<MatchHistory[]>(()=>{try{return JSON.parse(localStorage.getItem('lck-player-match-history-2026')||'[]')}catch{return []}})
+  const season=Number(localStorage.getItem('lck-manager-season-year')||2026)
+  const [seasonStats,setSeasonStats] = useState<Record<string,SeasonStats>>(()=>{try{return JSON.parse(localStorage.getItem(`lck-player-season-stats-${season}`)||'{}')}catch{return {}}})
+  const [matchHistory,setMatchHistory] = useState<MatchHistory[]>(()=>{try{return JSON.parse(localStorage.getItem(`lck-player-match-history-${season}`)||'[]')}catch{return []}})
   const [role, setRole] = useState('전체')
   const [selectedName, setSelectedName] = useState('Zeus')
 const [renewYears,setRenewYears] = useState(1)
+const [profileOpen,setProfileOpen]=useState(false)
+const [profileTab,setProfileTab]=useState<'개요'|'능력치'|'경기 기록'|'계약'|'챔피언'>('개요')
+const [sortBy,setSortBy]=useState<'이름'|'포지션'|'능력치'|'나이'|'잠재력'>('이름')
 useEffect(() => {
   try {
     saveClubRoster(teamShort, roster as PlayerData[])
@@ -91,7 +95,7 @@ useEffect(() => {
 
 
 useEffect(() => {
-  const refreshStats=()=>{try{setSeasonStats(JSON.parse(localStorage.getItem('lck-player-season-stats-2026')||'{}'));setMatchHistory(JSON.parse(localStorage.getItem('lck-player-match-history-2026')||'[]'))}catch{setSeasonStats({});setMatchHistory([])}}
+  const refreshStats=()=>{try{const season=Number(localStorage.getItem('lck-manager-season-year')||2026);setSeasonStats(JSON.parse(localStorage.getItem(`lck-player-season-stats-${season}`)||'{}'));setMatchHistory(JSON.parse(localStorage.getItem(`lck-player-match-history-${season}`)||'[]'))}catch{setSeasonStats({});setMatchHistory([])}}
   window.addEventListener('lck-player-stats-updated',refreshStats)
   window.addEventListener('storage',refreshStats)
   return ()=>{window.removeEventListener('lck-player-stats-updated',refreshStats);window.removeEventListener('storage',refreshStats)}
@@ -99,11 +103,19 @@ useEffect(() => {
 
 const roleOrder = ['TOP', 'JNG', 'MID', 'ADC', 'SUP']
 
-const starters = roster
+const sortedRoster = [...roster].sort((a,b)=>{
+  if(sortBy==='포지션') return roleOrder.indexOf(a.role)-roleOrder.indexOf(b.role)||a.name.localeCompare(b.name,'ko')
+  if(sortBy==='능력치') return calculateOverall(b)-calculateOverall(a)
+  if(sortBy==='나이') return a.age-b.age||a.name.localeCompare(b.name,'ko')
+  if(sortBy==='잠재력') return (b.potential??0)-(a.potential??0)||a.name.localeCompare(b.name,'ko')
+  return a.name.localeCompare(b.name,'ko')
+})
+
+const starters = sortedRoster
   .filter(p => p.status === '주전')
   .sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role))
 
-const substitutes = roster
+const substitutes = sortedRoster
   .filter(p => p.status === '후보')
   .sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role))
 
@@ -227,6 +239,16 @@ const recentMatches = selected ? matchHistory.filter(match => match.players?.som
             {r}
           </button>
         ))}
+        <label className="roster-sort">
+          정렬
+          <select value={sortBy} onChange={event=>setSortBy(event.target.value as typeof sortBy)}>
+            <option>이름</option>
+            <option>포지션</option>
+            <option>능력치</option>
+            <option>나이</option>
+            <option>잠재력</option>
+          </select>
+        </label>
       </div>
 
       <div className="roster-layout">
@@ -237,9 +259,10 @@ const recentMatches = selected ? matchHistory.filter(match => match.players?.som
               key={p.name}
               className={`player-card ${selected?.name === p.name ? 'selected' : ''}`}
               onClick={() => {
-                setSelectedName(p.name)
+                setSelectedName(p.name);setProfileOpen(true)
               }}
             >
+              {p.imageUrl?<img className="roster-player-image" src={p.imageUrl} alt="" onError={e=>{e.currentTarget.style.display='none'}}/>:<span className="roster-player-avatar">{p.name.slice(0,1)}</span>}
               <span className="player-role">{p.role}</span>
               <strong>{p.name}</strong>
               <span>OVR {calculateOverall(p)}</span>
@@ -252,9 +275,10 @@ const recentMatches = selected ? matchHistory.filter(match => match.players?.som
               key={p.name}
               className={`player-card ${selected?.name === p.name ? 'selected' : ''}`}
               onClick={() => {
-                setSelectedName(p.name)
+                setSelectedName(p.name);setProfileOpen(true)
               }}
             >
+              {p.imageUrl?<img className="roster-player-image" src={p.imageUrl} alt="" onError={e=>{e.currentTarget.style.display='none'}}/>:<span className="roster-player-avatar">{p.name.slice(0,1)}</span>}
               <span className="player-role">{p.role}</span>
               <strong>{p.name}</strong>
               <span>OVR {calculateOverall(p)}</span>
@@ -263,14 +287,16 @@ const recentMatches = selected ? matchHistory.filter(match => match.players?.som
         </div>
 
         {selected && (
-          <div className="player-detail">
+          <div className={profileOpen?'player-profile-overlay':'player-detail'}>
+            {profileOpen&&<div className="player-profile-toolbar"><div><span>{selected.role} · {selected.team}</span><h2>{selected.name}</h2></div><button onClick={()=>setProfileOpen(false)}>닫기 ×</button></div>}
+            {profileOpen&&<nav className="player-profile-tabs">{(['개요','능력치','경기 기록','계약','챔피언'] as const).map(tab=><button className={profileTab===tab?'active':''} key={tab} onClick={()=>setProfileTab(tab)}>{tab}</button>)}</nav>}
             <div className="detail-header">
               <div>
                 <span>{selected.role} · {selected.status}</span>
                 <h2>{selected.name}</h2>
                 <p>{selected.team} · {selected.age}세</p>
               </div>
-              <strong className="overall-score">{calculateOverall(selected)}</strong>
+              <div className="detail-avatar-wrap">{selected.imageUrl?<img src={selected.imageUrl} alt={`${selected.name} 프로필`} onError={e=>{e.currentTarget.style.display='none'}}/>:<span>{selected.name.slice(0,1)}</span>}<strong className="overall-score">{calculateOverall(selected)}</strong></div>
             </div>
 
             <h3>선수 정보</h3>
@@ -315,6 +341,10 @@ const recentMatches = selected ? matchHistory.filter(match => match.players?.som
                 </div>
               </div>
             ))}
+            <div className="player-extra-stats">
+              <div><span>피지컬</span><b>{selected.physical ?? 75}</b></div><div><span>시야</span><b>{selected.vision ?? 75}</b></div><div><span>오브젝트 판단</span><b>{selected.objectives ?? 75}</b></div><div><span>소통</span><b>{selected.communication ?? 75}</b></div><div><span>팀워크</span><b>{selected.teamwork ?? 75}</b></div><div><span>챔피언 폭</span><b>{selected.championPool ?? 84}</b></div>
+            </div>
+            <p className="player-source-note">데이터 출처: {selected.dataSource==='official'?'공식 발표':selected.dataSource==='report'?'보도 자료':selected.dataSource==='rumor'?'영입설':'게임용 추정 평가'} · 확인일 {selected.sourceCheckedAt||'2026-11-24'} · 능력치는 공개 커리어 기반 추정치입니다.</p>
 
             <div className="champion-list">
               <h3>주요 챔피언 및 숙련도</h3>

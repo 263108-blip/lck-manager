@@ -4,7 +4,7 @@ import { readClubRoster } from './ClubManager'
 
 type Series = { id:string; round:string; home:string; away:string; bestOf:5; homeWins:number; awayWins:number; winner?:string; status:'예정'|'종료' }
 type Save = { version:number; season:number; series:Series[]; champion?:string; r1Pick?:string; r2Pick?:string }
-const KEY='lck-manager-playoffs-2026'
+const storageKey=(season:number)=>`lck-manager-playoffs-${season}`
 const labels:Record<string,string>={PI1:'플레이-인 1경기',PI2:'플레이-인 2경기',PI3:'플레이-인 최종 진출전',UBR1A:'승자조 1라운드 · 1경기',UBR1B:'승자조 1라운드 · 2경기',LBR1:'패자조 1라운드',UBR2A:'승자조 2라운드 · 1경기',UBR2B:'승자조 2라운드 · 2경기',LBR2:'패자조 2라운드',UBF:'승자조 결승',LBR3:'패자조 3라운드',LBF:'패자조 결승',GF:'최종 결승'}
 const makeSeries=(id:string,round:string,home:string,away:string):Series=>({id,round,home,away,bestOf:5,homeWins:0,awayWins:0,status:'예정'})
 const readPower=(team:string)=>{const starters=readClubRoster(team).filter(p=>p.status==='주전');return starters.length?starters.reduce((sum,p)=>sum+(p.overall||70),0)/starters.length:72}
@@ -14,10 +14,10 @@ const loser=(save:Save,id:string)=>{const s=find(save,id);return s?.winner?(s.wi
 const done=(save:Save,id:string)=>find(save,id)?.status==='종료'
 const exists=(save:Save,id:string)=>Boolean(find(save,id))
 function seeds(table:Standing[]){return {legend:table.filter(t=>t.group==='LEGEND').sort((a,b)=>b.wins-a.wins||b.setDiff-a.setDiff),rise:table.filter(t=>t.group==='RISE').sort((a,b)=>b.wins-a.wins||b.setDiff-a.setDiff)}}
-function freshSave(table:Standing[]):Save{
+function freshSave(table:Standing[],season=2026):Save{
  const {legend,rise}=seeds(table)
- if(legend.length!==5||rise.length!==5)return {version:3,season:2026,series:[]}
- return {version:3,season:2026,series:[
+ if(legend.length!==5||rise.length!==5)return {version:3,season,series:[]}
+ return {version:3,season,series:[
   makeSeries('PI1','PI1',legend[4].name,rise[0].name),
   makeSeries('PI2','PI2',rise[1].name,rise[2].name),
  ],r1Pick:'',r2Pick:''}
@@ -51,10 +51,11 @@ function simulate(game:Series):Series{
  for(let i=0;i<game.bestOf&&homeWins<3&&awayWins<3;i++){if(Math.random()<chance)homeWins++;else awayWins++}
  return {...game,homeWins,awayWins,winner:homeWins>awayWins?game.home:game.away,status:'종료'}
 }
-export default function Playoffs({standings,myTeam,ready=false}:{standings:Standing[];myTeam:string;ready?:boolean}){
- const [save,setSave]=useState<Save>(()=>{try{const raw=localStorage.getItem(KEY);if(!raw)return ready?freshSave(standings):{version:3,season:2026,series:[]};const old=JSON.parse(raw) as Save;return old.version===3?old:(ready?freshSave(standings):{version:3,season:2026,series:[]})}catch{return ready?freshSave(standings):{version:3,season:2026,series:[]}}})
- useEffect(()=>{if(ready&&!save.series.length&&standings.some(t=>t.group==='LEGEND'))setSave(freshSave(standings))},[ready,standings,save.series.length])
- useEffect(()=>{localStorage.setItem(KEY,JSON.stringify(save))},[save])
+export default function Playoffs({standings,myTeam,ready=false,seasonYear=2026}:{standings:Standing[];myTeam:string;ready?:boolean;seasonYear?:number}){
+ const key=storageKey(seasonYear)
+ const [save,setSave]=useState<Save>(()=>{try{const raw=localStorage.getItem(key);if(!raw)return ready?freshSave(standings,seasonYear):{version:3,season:seasonYear,series:[]};const old=JSON.parse(raw) as Save;return old.version===3?old:(ready?freshSave(standings,seasonYear):{version:3,season:seasonYear,series:[]})}catch{return ready?freshSave(standings,seasonYear):{version:3,season:seasonYear,series:[]}}})
+ useEffect(()=>{if(ready&&!save.series.length&&standings.some(t=>t.group==='LEGEND'))setSave(freshSave(standings,seasonYear))},[ready,standings,save.series.length,seasonYear])
+ useEffect(()=>{localStorage.setItem(key,JSON.stringify(save))},[save,key])
  const {legend,rise}=useMemo(()=>seeds(standings),[standings])
  const progress=Math.round(save.series.filter(s=>s.status==='종료').length/13*100)
  function pickR1(){
@@ -87,7 +88,7 @@ export default function Playoffs({standings,myTeam,ready=false}:{standings:Stand
    return deriveBracket(updated)
   })
  }
- function reset(){if(!ready||!window.confirm('2026 LCK 플레이-인과 플레이오프 결과를 초기화할까요?'))return;setSave(freshSave(standings))}
+ function reset(){if(!ready||!window.confirm('2026 LCK 플레이-인과 플레이오프 결과를 초기화할까요?'))return;setSave(freshSave(standings,seasonYear))}
  const groups=[
   {title:'플레이-인 · BO5',ids:['PI1','PI2','PI3']},
   {title:'승자조 1라운드 · BO5',ids:['UBR1A','UBR1B']},
