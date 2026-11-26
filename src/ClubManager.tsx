@@ -52,7 +52,6 @@ const defaultCareer=(club:ClubData):Career=>({
   scoutingBudget:2,scouted:[],staff:baseStaff(club),history:['2026 시즌 LCK 커리어를 시작했습니다.'],
   signedPlayers:[],releasedPlayers:[],listedPlayers:[],retiredPlayers:[],mediaReputation:50,pressure:35,
 })
-})
 const readCareer=(club:ClubData):Career=>{
   const defaults=defaultCareer(club)
   try {
