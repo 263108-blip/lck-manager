@@ -5,6 +5,7 @@ export type ManagerProfile = {
   name: string
   nationality: string
   age: number
+  birthDate: string
   experience: '신인 감독' | '성과형 감독' | '베테랑 감독'
   tacticalStyle: '밸런스형' | '공격형' | '운영형' | '육성형'
   leadership: number
@@ -14,19 +15,26 @@ export type ManagerProfile = {
 }
 
 const defaultProfile: ManagerProfile = {
-  name: '', nationality: '대한민국', age: 42, experience: '신인 감독', tacticalStyle: '밸런스형',
+  name: '', nationality: '대한민국', age: 42, birthDate: '1983-11-23', experience: '신인 감독', tacticalStyle: '밸런스형',
   leadership: 72, tactics: 72, development: 68, draft: 70,
 }
 
 export default function ManagerSetup({onCreate}:{onCreate:(profile:ManagerProfile)=>void}) {
   const [profile,setProfile]=useState<ManagerProfile>(()=>{
-    try { return {...defaultProfile,...JSON.parse(localStorage.getItem('lck-manager-profile')||'{}')} } catch { return defaultProfile }
+    try {
+      const saved={...defaultProfile,...JSON.parse(localStorage.getItem('lck-manager-profile')||'{}')}
+      if(!saved.birthDate){
+        saved.birthDate=`${2025-saved.age}-11-23`
+      }
+      return saved
+    } catch { return defaultProfile }
   })
   const [error,setError]=useState('')
   function create() {
     if(profile.name.trim().length<2){setError('감독 이름은 두 글자 이상 입력해 주세요.');return}
-    localStorage.setItem('lck-manager-profile',JSON.stringify(profile))
-    onCreate({...profile,name:profile.name.trim()})
+    const normalized={...profile,name:profile.name.trim()}
+    localStorage.setItem('lck-manager-profile',JSON.stringify(normalized))
+    onCreate(normalized)
   }
 
   function setExperience(value:ManagerProfile['experience']) {
@@ -48,7 +56,10 @@ export default function ManagerSetup({onCreate}:{onCreate:(profile:ManagerProfil
       <div className="manager-fields">
         <label>감독 이름<input value={profile.name} onChange={e=>setProfile({...profile,name:e.target.value})} placeholder="예: 김도현" /></label>
         <label>국적<select value={profile.nationality} onChange={e=>setProfile({...profile,nationality:e.target.value})}><option>대한민국</option><option>중국</option><option>미국</option><option>영국</option><option>캐나다</option><option>덴마크</option></select></label>
-        <label>나이<input type="number" min="24" max="70" value={profile.age} onChange={e=>setProfile({...profile,age:Math.max(24,Math.min(70,Number(e.target.value)))})}/></label>
+        <label>나이<input type="number" min="24" max="70" value={profile.age} onChange={e=>{
+          const age=Math.max(24,Math.min(70,Number(e.target.value)||24))
+          setProfile({...profile,age,birthDate:`${2025-age}-11-23`})
+        }}/></label>
         <label>감독 경력<select value={profile.experience} onChange={e=>setExperience(e.target.value as ManagerProfile['experience'])}><option>신인 감독</option><option>성과형 감독</option><option>베테랑 감독</option></select></label>
         <label>전술 성향<select value={profile.tacticalStyle} onChange={e=>setProfile({...profile,tacticalStyle:e.target.value as ManagerProfile['tacticalStyle']})}><option>밸런스형</option><option>공격형</option><option>운영형</option><option>육성형</option></select></label>
       </div>

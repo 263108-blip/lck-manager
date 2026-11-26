@@ -19,26 +19,35 @@ export const seasonEvents:SeasonEvent[]=[
   {id:'playoffs',name:'LCK 플레이오프',start:'2026-08-29',end:'2026-09-13',category:'LCK',location:'대한민국',description:'6개 팀 더블 엘리미네이션 BO5로 시즌 우승팀을 결정합니다.'},
   {id:'worlds',name:'World Championship',start:'2026-10-15',end:'2026-11-14',category:'INTERNATIONAL',location:'미국',description:'플레이-인, 스위스 스테이지, 녹아웃 스테이지로 구성된 시즌 최종 국제 대회입니다.'},
 ]
-export function getCurrentSeasonEvent(date:string):SeasonEvent|undefined {
-  return seasonEvents.find(event=>date>=event.start&&date<=event.end)
+function shiftedDate(date:string, seasonYear:number):string {
+  const value=new Date(date+'T12:00:00')
+  value.setFullYear(value.getFullYear()+seasonYear-2026)
+  return [value.getFullYear(),String(value.getMonth()+1).padStart(2,'0'),String(value.getDate()).padStart(2,'0')].join('-')
 }
-export function getNextSeasonEvent(date:string):SeasonEvent|undefined {
-  return seasonEvents.find(event=>event.start>date)
+function shiftedEvents(seasonYear:number):SeasonEvent[] {
+  return seasonEvents.map(event=>({...event,name:event.name.replace('2026',String(seasonYear)),start:shiftedDate(event.start,seasonYear),end:shiftedDate(event.end,seasonYear)}))
 }
-export function getSeasonPhase(date:string):string {
-  if(date<'2026-01-14')return 'PRESEASON'
-  if(date<='2026-03-15')return 'SPLIT_1'
-  if(date<='2026-03-22')return 'FIRST_STAND'
-  if(date<'2026-04-01')return 'BREAK'
-  if(date<='2026-05-31')return 'REGULAR_R1_2'
-  if(date<='2026-06-14')return 'ROAD_TO_MSI'
-  if(date<'2026-06-28')return 'MSI_PREP'
-  if(date<='2026-07-12')return 'MSI'
-  if(date<'2026-07-29')return 'SUMMER_BREAK'
-  if(date<='2026-08-23')return 'REGULAR_R3_4'
-  if(date<='2026-08-28')return 'PLAY_IN'
-  if(date<='2026-09-13')return 'PLAYOFFS'
-  if(date<'2026-10-15')return 'OFFSEASON'
-  if(date<='2026-11-14')return 'WORLDS'
+export function getCurrentSeasonEvent(date:string, seasonYear=2026):SeasonEvent|undefined {
+  return shiftedEvents(seasonYear).find(event=>date>=event.start&&date<=event.end)
+}
+export function getNextSeasonEvent(date:string, seasonYear=2026):SeasonEvent|undefined {
+  return shiftedEvents(seasonYear).find(event=>event.start>date)
+}
+export function getSeasonPhase(date:string, seasonYear=2026):string {
+  const bounds=(month:number,day:number)=>`${seasonYear}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`
+  if(date<bounds(1,14))return 'PRESEASON'
+  if(date<=bounds(3,15))return 'SPLIT_1'
+  if(date<=bounds(3,22))return 'FIRST_STAND'
+  if(date<bounds(4,1))return 'BREAK'
+  if(date<=bounds(5,31))return 'REGULAR_R1_2'
+  if(date<=bounds(6,14))return 'ROAD_TO_MSI'
+  if(date<bounds(6,28))return 'MSI_PREP'
+  if(date<=bounds(7,12))return 'MSI'
+  if(date<bounds(7,29))return 'SUMMER_BREAK'
+  if(date<=bounds(8,23))return 'REGULAR_R3_4'
+  if(date<=bounds(8,28))return 'PLAY_IN'
+  if(date<=bounds(9,13))return 'PLAYOFFS'
+  if(date<bounds(10,15))return 'OFFSEASON'
+  if(date<=bounds(11,14))return 'WORLDS'
   return 'OFFSEASON'
 }
